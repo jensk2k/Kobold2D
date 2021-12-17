@@ -1,0 +1,12 @@
+
+.vs/Kobold2D/v16/.suo
+*.db
+*.ipch
+*.obj
+*.recipe
+*.ilk
+*.tlog
+*.idb
+*.pdb
+Kobold2D/bin/x64/Debug/Kobold2D.exe
+Kobold2D/bin/intermediates/x64/Debug/Kobold2D.log
