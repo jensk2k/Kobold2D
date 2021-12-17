@@ -161,9 +161,3 @@
 //	float y = t.x * sinAngle + t.y * cosAngle;
 //	return Vec2f(x, y) + p;
 //}
-
-std::ostream& operator<<(std::ostream& os, const Vec2f& vec)
-{
-	os << "(" << vec.x << "," << vec.y << ")";
-	return os;
-}

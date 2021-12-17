@@ -33,8 +33,8 @@ void VectorGraphicsObject::Draw(GameState& gameState) const
 			Vec2f v1Rot = Vec2f::RotateAroundPoint(v1Trans, transform.position, cosR, sinR);
 			Vec2f v2Rot = Vec2f::RotateAroundPoint(v2Trans, transform.position, cosR, sinR);
 
-			Vec2f v1ss = gameState.viewport.WorldToScreenSpace(v1Rot);
-			Vec2f v2ss = gameState.viewport.WorldToScreenSpace(v2Rot);
+			Vec2i v1ss = gameState.viewport.WorldToScreenSpace(v1Rot);
+			Vec2i v2ss = gameState.viewport.WorldToScreenSpace(v2Rot);
 
 			gameState.DrawLine(v1ss, v2ss, Colors::WHITE);
 		}

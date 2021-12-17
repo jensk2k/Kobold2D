@@ -35,12 +35,13 @@ public:
 	int GetWindowWidth() { return SCREEN_W; }
 	int GetWindowHeight() { return SCREEN_H; }
 
-	void DrawRectangle(Vec2f position, int width, int height, Color color) const;
-	void DrawRectangleSolid(Vec2f position, int width, int height, Color color) const;
-	void DrawTexture(const Texture& texture, Vec2f position, int width, int height);
+	void DrawRectangle(Vec2i position, int width, int height, Color color) const;
+	void DrawRectangleSolid(Vec2i position, int width, int height, Color color) const;
+	void DrawTexture(const Texture& texture, Vec2i position, int width, int height);
 	void DrawLine(Vec2f v1, Vec2f v2, Color color);
-	void DrawCircle(Vec2f c, float radius, Color color);
-	void DrawCircleSolid(Vec2f c, float radius, Color color);
+	void DrawLine(Vec2i v1, Vec2i v2, Color color);
+	void DrawCircle(Vec2i c, int radius, Color color);
+	void DrawCircleSolid(Vec2i c, int radius, Color color);
 	void DrawText(const std::string& str, int x, int y);
 
 	SDL_Texture* LoadSDLTexture(const char* texturePath);
@@ -51,7 +52,7 @@ public:
 
 	bool IsRunning() { return m_isRunning; };
 	unsigned int GetCurrentTime() { return m_currentTime; }
-	Vec2f GetMousePosition() { return mousePosition; }
+	Vec2i GetMousePosition() { return mousePosition; }
 	float GetDeltaTime() { return m_deltaTime; }
 
 private:
@@ -70,7 +71,7 @@ private:
 
 	std::unique_ptr<GameState> m_gameState;
 
-	Vec2f mousePosition;
+	Vec2i mousePosition;
 
 	Input m_input;
 };

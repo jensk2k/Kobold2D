@@ -23,19 +23,20 @@ public:
 	virtual void Render() = 0;
 
 	void LoadTexture(const char* texturePath, Texture& texture, int width, int height);
-	void DrawRectangle(Vec2f position, int width, int height, Color color) const;
-	void DrawRectangleSolid(Vec2f position, int width, int height, Color color) const;
-	void DrawTexture(const Texture& texture, Vec2f position, int width, int height);
+	void DrawRectangle(Vec2i position, int width, int height, Color color) const;
+	void DrawRectangleSolid(Vec2i position, int width, int height, Color color) const;
+	void DrawTexture(const Texture& texture, Vec2i position, int width, int height);
 	void DrawLine(Vec2f v1, Vec2f v2, Color color);
-	void DrawCircle(Vec2f c, float radius, Color color);
-	void DrawCircleSolid(Vec2f c, float radius, Color color);
+	void DrawLine(Vec2i v1, Vec2i v2, Color color);
+	void DrawCircle(Vec2i c, int radius, Color color);
+	void DrawCircleSolid(Vec2i c, int radius, Color color);
 	void DrawArrowWS(Vec2f origin, Vec2f direction, float scale, Color colo);
 	void DrawText(const std::string& str, int x, int y);
 	int GetWindowWidth();
 	int GetWindowHeight();
 	unsigned int GetCurrentTime();
 	float GetDeltaTime();
-	Vec2f GetMousePosition();
+	Vec2i GetMousePosition();
 	void RenderPixelMapToTexture(const Map2D<Color>& map, Texture& texture);
 	Viewport viewport;
 

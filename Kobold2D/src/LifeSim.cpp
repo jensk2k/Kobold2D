@@ -37,11 +37,10 @@ void LifeSim::Render()
         for (int x = 0; x < grid.m_width; x++)
         {
             int width = 32;
-            Vec2f position(x * width, y * width);
+            Vec2i position(x * width, y * width);
 
-            int c = noiseMap(x, y) * 255;
+            uint8_t c = static_cast<uint8_t>(noiseMap(x, y) * 255);
             Color color(c, c, c, 255);
-
 
             DrawRectangleSolid(position, width, width, color);
             DrawRectangle(position, width, width, Colors::WHITE);

@@ -147,8 +147,8 @@ void Core::HandleEvents()
 	SDL_PumpEvents();
 	int x, y;
 	SDL_GetMouseState(&x, &y);
-	mousePosition.x = static_cast<float>(x);
-	mousePosition.y = static_cast<float>(y);
+	mousePosition.x = x;
+	mousePosition.y = y;
 }
 
 void Core::Update()
@@ -191,37 +191,37 @@ int Core::GetDisplayRefreshRate()
 	return mode.refresh_rate;
 }
 
-void Core::DrawRectangle(Vec2f position, int width, int height, Color color) const
+void Core::DrawRectangle(Vec2i position, int width, int height, Color color) const
 {
 	PROFILE_FUNCTION();
 	SDL_SetRenderDrawColor(m_renderer, color.red, color.green, color.blue, color.alpha);
 	SDL_Rect rect;
-	rect.x = static_cast<int>(position.x);
-	rect.y = static_cast<int>(position.y);
+	rect.x = position.x;
+	rect.y = position.y;
 	rect.w = width;
 	rect.h = height;
 	
 	SDL_RenderDrawRect(m_renderer, &rect);
 }
 
-void Core::DrawRectangleSolid(Vec2f position, int width, int height, Color color) const
+void Core::DrawRectangleSolid(Vec2i position, int width, int height, Color color) const
 {
 	PROFILE_FUNCTION();
 	SDL_SetRenderDrawColor(m_renderer, color.red, color.green, color.blue, color.alpha);
 	SDL_Rect rect;
-	rect.x = static_cast<int>(position.x);
-	rect.y = static_cast<int>(position.y);
+	rect.x = position.x;
+	rect.y = position.y;
 	rect.w = width;
 	rect.h = height;
 	SDL_RenderFillRect(m_renderer, &rect);
 }
 
-void Core::DrawTexture(const Texture& texture, Vec2f position, int width, int height)
+void Core::DrawTexture(const Texture& texture, Vec2i position, int width, int height)
 {
 	PROFILE_FUNCTION();
 	SDL_Rect dRect;
-	dRect.x = static_cast<int>(position.x);
-	dRect.y = static_cast<int>(position.y);
+	dRect.x = position.x;
+	dRect.y = position.y;
 	dRect.w = width;
 	dRect.h = height;
 	SDL_RenderCopy(m_renderer, &texture.GetSDLTexture(), nullptr, &dRect);
@@ -234,14 +234,21 @@ void Core::DrawLine(Vec2f v1, Vec2f v2, Color color)
 	SDL_RenderDrawLineF(m_renderer, v1.x, v1.y, v2.x, v2.y);
 }
 
-void Core::DrawCircle(Vec2f c, float radius, Color color)
+void Core::DrawLine(Vec2i v1, Vec2i v2, Color color)
+{
+	PROFILE_FUNCTION();
+	SDL_SetRenderDrawColor(m_renderer, color.red, color.green, color.blue, color.alpha);
+	SDL_RenderDrawLine(m_renderer, v1.x, v1.y, v2.x, v2.y);
+}
+
+void Core::DrawCircle(Vec2i c, int radius, Color color)
 {
 	PROFILE_FUNCTION();
 	SDL_SetRenderDrawColor(m_renderer, color.red, color.green, color.blue, color.alpha);
 
 	int offsetx, offsety, d;
 	int status;
-	int r = static_cast<int>(radius);
+	int r = radius;
 
 	offsetx = 0;
 	offsety = r;
@@ -281,7 +288,7 @@ void Core::DrawCircle(Vec2f c, float radius, Color color)
 	//return status;
 }
 
-void Core::DrawCircleSolid(Vec2f c, float radius, Color color)
+void Core::DrawCircleSolid(Vec2i c, int radius, Color color)
 {
 	PROFILE_FUNCTION();
 	SDL_SetRenderDrawColor(m_renderer, color.red, color.green, color.blue, color.alpha);

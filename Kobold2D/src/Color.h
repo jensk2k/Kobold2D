@@ -4,9 +4,9 @@
 struct Color
 {
 	Color() : red(0), green(0), blue(0), alpha(0) {}
-	Color(Uint8 r, Uint8 g, Uint8 b) : red(r), green(g), blue(b), alpha(255) {}
-	Color(Uint8 r, Uint8 g, Uint8 b, Uint8 a) : red(r), green(g), blue(b), alpha(a) {}
-	Uint8 red, green, blue, alpha;
+	Color(uint8_t r, uint8_t g, uint8_t b) : red(r), green(g), blue(b), alpha(255) {}
+	Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : red(r), green(g), blue(b), alpha(a) {}
+	uint8_t red, green, blue, alpha;
 };
 
 namespace Colors

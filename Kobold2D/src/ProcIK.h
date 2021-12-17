@@ -10,7 +10,7 @@ class ProcIK : public GameState
 	JointAnimation::Limb ikLimb;
 	JointAnimation::Limb twoBonedLimb;
 	JointAnimation::Limb twoBonedLimb2;
-	Vec2f pingPong;
+	Vec2i pingPong;
 	Vec2f animationCycle;
 
 

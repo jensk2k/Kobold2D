@@ -31,11 +31,14 @@ void Squares::Render()
 			float scaleX = (sin(time * timeScale + x * xTimeoffset) + 2.f) / 3.f;
 			float scaleY = (sin(time * timeScale + y * yTimeoffset) + 2.f) / 3.f;
 
-			Vec2f pos;
-			pos.x = spacing * 0.5f + x * spacing - squareSize * 0.5f * scaleX;
-			pos.y = spacing * 0.5f + y * spacing - squareSize * 0.5f * scaleY;
+			Vec2i pos;
+			pos.x = static_cast<int>(spacing * 0.5f + x * spacing - squareSize * 0.5f * scaleX);
+			pos.y = static_cast<int>(spacing * 0.5f + y * spacing - squareSize * 0.5f * scaleY);
 
-			DrawRectangleSolid(pos, scaleX * squareSize, scaleY * squareSize, color);
+			DrawRectangleSolid(pos, 
+				static_cast<int>(scaleX * squareSize), 
+				static_cast<int>(scaleY * squareSize), 
+				color);
 		}
 	}
 }

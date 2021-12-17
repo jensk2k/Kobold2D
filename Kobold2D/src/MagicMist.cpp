@@ -215,5 +215,5 @@ void MagicMist::Render()
 	//noiseTexture.m_width = NOISE_W;
 	//noiseTexture.m_height = NOISE_H;
 
-	DrawTexture(noiseTexture, Vec2f(), SCREEN_W, SCREEN_H);
+	DrawTexture(noiseTexture, Vec2i(), SCREEN_W, SCREEN_H);
 }

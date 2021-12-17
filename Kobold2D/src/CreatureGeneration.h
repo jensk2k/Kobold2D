@@ -8,12 +8,12 @@
 struct Leg
 {
 	//const
-	bool isRight;
+	bool isRight = false;
 	Vec2f rootOffset;
-	float animationTargetOffset;
-	float animationTargetRadius;
+	float animationTargetOffset = 0.f;
+	float animationTargetRadius = 0.f;
 	//float animationTargetContactRange;
-	float animationClockOffset;
+	float animationClockOffset = 0.f;
 
 	// runtime
 	JointAnimation::Limb limb;

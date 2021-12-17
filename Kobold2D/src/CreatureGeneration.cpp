@@ -35,7 +35,7 @@ CreatureGeneration::CreatureGeneration(Core& core)
 
 		vgos.push_back(VectorGraphicsObject(creature.transform, vertices));
 
-		int index = vgos.size() - 1;
+		int index = static_cast<int>(vgos.size()) - 1;
 		creature.vgoIndex = index;
 
 		// Gen anim clock
@@ -56,7 +56,7 @@ CreatureGeneration::CreatureGeneration(Core& core)
 
 			leg.isRight = even;
 
-			int row = j / 2.f;
+			int row = j / 2;
 
 			leg.rootOffset = Vec2f(even ? 2.f : -2.f, 2.f - row * 2.2f);
 
@@ -240,8 +240,8 @@ void CreatureGeneration::Render()
 			{
 				const JointAnimation::Bone& segment = leg.limb.bones[k];
 
-				Vec2f v1 = viewport.WorldToScreenSpace(segment.v1);
-				Vec2f v2 = viewport.WorldToScreenSpace(segment.v2);
+				Vec2i v1 = viewport.WorldToScreenSpace(segment.v1);
+				Vec2i v2 = viewport.WorldToScreenSpace(segment.v2);
 
 				DrawLine(v1, v2, Colors::WHITE);				
 			}
@@ -259,7 +259,7 @@ void CreatureGeneration::Render()
 
 		std::ostringstream ss;
 		ss << "h: " << MathUtils::Rad2Deg(creature.transform.GetHeading());
-		Vec2f textPos = viewport.WorldToScreenSpace(creature.transform.position);
+		Vec2i textPos = viewport.WorldToScreenSpace(creature.transform.position);
 
 		DrawText(ss.str(), textPos.x, textPos.y);
 
@@ -270,8 +270,8 @@ void CreatureGeneration::Render()
 		//DrawArrowWS(creature.transform.position, creature.acceleration, 1.f, Colors::RED);
 	}
 
-	Vec2f mousePosition = GetMousePosition();
-	DrawRectangleSolid(Vec2f(mousePosition.x - 5.f, mousePosition.y - 5.f), 10, 10, Colors::RED);
+	Vec2i mousePosition = GetMousePosition();
+	DrawRectangleSolid(Vec2i(mousePosition.x - 5, mousePosition.y - 5), 10, 10, Colors::RED);
 
 }
 

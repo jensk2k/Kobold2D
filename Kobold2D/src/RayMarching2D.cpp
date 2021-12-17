@@ -15,22 +15,22 @@ RayMarching2D::RayMarching2D(Core& core)
 	srand(time(NULL));
 	for (int i = 0; i < count; ++i)
 	{
-		float max = 200;
+		int max = 200;
 
-		float x = (float)RandomRange(0, 1280 - max);
-		float y = (float)RandomRange(0, 720 - max);
+		int x = RandomRange(0, 1280 - max);
+		int y = RandomRange(0, 720 - max);
 		int height = RandomRange(10, max);
 		int width = RandomRange(10, max);
 
-		rectangles.push_back(Rectangle(Vec2f(x, y), height, width));
+		rectangles.push_back(Rectangle(Vec2i(x, y), height, width));
 	}
 
 	for (int i = 0; i < count; ++i)
 	{
-		float max = 200;
-		float x = (float)RandomRange(max, 1280 - max);
-		float y = (float)RandomRange(max, 720 - max);
-		float radius = (float)RandomRange(10, max);
+		int  max = 200;
+		int x = RandomRange(max, 1280 - max);
+		int y = RandomRange(max, 720 - max);
+		int radius = RandomRange(10, max);
 
 		circles.push_back(Circle(Vec2f(x, y), radius));
 	}
@@ -40,7 +40,7 @@ void RayMarching2D::Update()
 {
 	mousePositon = GetMousePosition();
 
-	rayOrigin = Vec2f(20, 20);
+	rayOrigin = Vec2i(20, 20);
 	rayDirection = (mousePositon - rayOrigin).Normalized();
 
 	//bool hit = false;
@@ -48,7 +48,7 @@ void RayMarching2D::Update()
 
 	for (Rectangle r : rectangles)
 	{
-		Vec2f p = mousePositon;
+		//Vec2f p = mousePositon;
 
 		float xMin = r.position.x;
 		float xMax = r.position.x + r.width;
@@ -101,7 +101,7 @@ void RayMarching2D::Render()
 	}
 
 	//DrawLine(rayOrigin, rayOrigin + rayDirection * hitDistance, Colors::WHITE);
-	DrawRectangleSolid(mousePositon - Vec2f(10, 10), 20, 20, Colors::WHITE);
+	DrawRectangleSolid(mousePositon - Vec2i(10, 10), 20, 20, Colors::WHITE);
 	DrawCircle(mousePositon, hitDistance, Colors::WHITE);
 
 	//DrawCircle(Vector2(400.f, 300.f), 100.f, Colors::WHITE);

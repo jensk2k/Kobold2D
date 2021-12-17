@@ -7,8 +7,8 @@ class GameState;
 struct Viewport
 {
 	Viewport(GameState& gameState) : gameState(gameState) {}
-	Vec2f WorldToScreenSpace(Vec2f worldPos) const;
-	Vec2f ScreenToWorldPosition(Vec2f screenPos) const;
+	Vec2i WorldToScreenSpace(Vec2f worldPos) const;
+	Vec2f ScreenToWorldPosition(Vec2i screenPos) const;
 	void DrawGrid(GameState& gameState, int scale);
 
 	Vec2f position;

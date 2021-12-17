@@ -4,12 +4,12 @@
 
 struct Rectangle
 {
-	Rectangle(Vec2f position, int height, int width) :
+	Rectangle(Vec2i position, int height, int width) :
 		position(position),
 		height(height),
 		width(width) {}
 
-	Vec2f position;
+	Vec2i position;
 	int height;
 	int width;
 };
@@ -29,9 +29,9 @@ class RayMarching2D : public GameState
 private:
 	std::vector<Rectangle> rectangles;
 	std::vector<Circle> circles;
-	Vec2f mousePositon;
-	Vec2f rayOrigin;
-	Vec2f rayDirection;
+	Vec2i mousePositon;
+	Vec2i rayOrigin;
+	Vec2i rayDirection;
 
 	float hitDistance = 0.f;
 

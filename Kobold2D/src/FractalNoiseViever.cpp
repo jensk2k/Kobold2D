@@ -13,7 +13,9 @@ static void NoiseToColorMap(const Map2D<float>& noiseMap, Map2D<Color>& colorMap
 		{
 			float noise = noiseMap(x, y);
 
-			Color c(noise * 255, noise * 255, noise * 255, 255);
+			uint8_t noise8 = static_cast<uint8_t>(noise * 255);
+
+			Color c(noise8, noise8, noise8, 255);
 
 			colorMapOUT(x, y) = c;
 		}
@@ -135,7 +137,7 @@ void FractalNoiseViever::Update()
 
 void FractalNoiseViever::Render()
 {
-	DrawTexture(texture, Vec2f(), texture.m_width, texture.m_height);
+	DrawTexture(texture, Vec2i(), texture.m_width, texture.m_height);
 
 	{
 		std::ostringstream ss;
@@ -169,5 +171,5 @@ void FractalNoiseViever::Render()
 		DrawText(ss.str(), 5, 720 - 30);
 	}
 
-	DrawRectangle(Vec2f(0, 40 + (30 * selector)), 250, 35, Colors::WHITE);
+	DrawRectangle(Vec2i(0, 40 + (30 * selector)), 250, 35, Colors::WHITE);
 }
