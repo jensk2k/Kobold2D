@@ -2,21 +2,21 @@
 #include "GameState.h"
 
 
-Vec2f Viewport::WorldToScreenSpace(Vec2f worldPos) const
+Vec2i Viewport::WorldToScreenSpace(Vec2f worldPos) const
 {
 	Vec2f worldPosRelativeToVP = worldPos - position;
 
 	int windowWidth = gameState.GetWindowWidth();
 	int windowHeight = gameState.GetWindowHeight();
 
-	Vec2f screenSpacePos;
-	screenSpacePos.x = windowWidth / 2.f + worldPosRelativeToVP.x * scale;
-	screenSpacePos.y = windowHeight / 2.f - worldPosRelativeToVP.y * scale;
+	Vec2i screenSpacePos;
+	screenSpacePos.x = windowWidth / 2 + static_cast<int>(worldPosRelativeToVP.x * scale);
+	screenSpacePos.y = windowHeight / 2 - static_cast<int>(worldPosRelativeToVP.y * scale);
 
 	return screenSpacePos;
 }
 
-Vec2f Viewport::ScreenToWorldPosition(Vec2f screenPos) const
+Vec2f Viewport::ScreenToWorldPosition(Vec2i screenPos) const
 {
 	int windowWidth = gameState.GetWindowWidth();
 	int windowHeight = gameState.GetWindowHeight();
@@ -41,24 +41,24 @@ void Viewport::DrawGrid(GameState& gameState, int scale)
 
 	int windowWidth = gameState.GetWindowWidth();
 	int windowHeight = gameState.GetWindowHeight();
-	Vec2f topLeftWS = ScreenToWorldPosition(Vec2f());
-	Vec2f bottomRightWS = ScreenToWorldPosition(Vec2f(windowWidth, windowHeight));
+	Vec2f topLeftWS = ScreenToWorldPosition(Vec2i());
+	Vec2f bottomRightWS = ScreenToWorldPosition(Vec2i(windowWidth, windowHeight));
 
-	int left = topLeftWS.x;
-	int right = bottomRightWS.x;
-	int top = topLeftWS.y;
-	int bottom = bottomRightWS.y;
+	float left = topLeftWS.x;
+	float right = bottomRightWS.x;
+	float top = topLeftWS.y;
+	float bottom = bottomRightWS.y;
 
 	Color drawGrey(100, 100, 100);
 
-	for (int x = left; x < right; x += scale)
+	for (float x = left; x < right; x += scale)
 	{
 		Vec2f lineA_WS(x, top);
 		Vec2f lineB_WS(x, bottom);
 		gameState.DrawLine(WorldToScreenSpace(lineA_WS), WorldToScreenSpace(lineB_WS), drawGrey);
 	}
 
-	for (int y = bottom; y < top; y += scale)
+	for (float y = bottom; y < top; y += scale)
 	{
 		Vec2f lineA_WS(left, y);
 		Vec2f lineB_WS(right, y);
