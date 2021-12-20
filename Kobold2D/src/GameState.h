@@ -5,6 +5,7 @@
 #include "Map2D.h"
 #include "Input.h"
 #include "Viewport.h"
+#include "KTypes.h"
 
 class Core;
 
@@ -19,6 +20,8 @@ public:
 	virtual void Init() {};
 	virtual void HandleKeyDown(Keys key) {}
 	virtual void HandleKeyUp(Keys key) {}
+	virtual void HandleMouseDown(MouseButtons button, Vec2i mousePosition) {}
+	virtual void HandleMouseUp(MouseButtons button, Vec2i mousePosition) {}
 	virtual void Update() = 0;
 	virtual void Render() = 0;
 
@@ -38,6 +41,7 @@ public:
 	float GetDeltaTime();
 	Vec2i GetMousePosition();
 	void RenderPixelMapToTexture(const Map2D<Color>& map, Texture& texture);
+	void RenderBMapToTexture(const BMap& map, Texture& texture);
 	Viewport viewport;
 
 private:

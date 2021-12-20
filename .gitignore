@@ -10,3 +10,14 @@
 *.pdb
 Kobold2D/bin/x64/Debug/Kobold2D.exe
 Kobold2D/bin/intermediates/x64/Debug/Kobold2D.log
+*.db-shm
+*.db-wal
+*.opendb
+*.enc
+*.iobj
+*.ipdb
+Kobold2D/bin/intermediates/x64/Release/Kobold2D.log
+Kobold2D/bin/x64/Release/Kobold2D.exe
+*.vcxproj
+*.filters
+*.vcxproj

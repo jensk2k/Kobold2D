@@ -12,17 +12,19 @@
 #include "FractalNoiseViever.h"
 #include "Tanks.h"
 #include "Squares.h"
+#include "Conway.h"
 
 Core::Core() 
 {	
 	//m_gameState = std::make_unique<MagicMist>(*this);
 	//m_gameState = std::make_unique<ProcIK>(*this);
-	m_gameState = std::make_unique<CreatureGeneration>(*this);
+	//m_gameState = std::make_unique<CreatureGeneration>(*this);
 	//m_gameState = std::make_unique<RayMarching2D>(*this);
 	//m_gameState = std::make_unique<LifeSim>(*this);
 	//m_gameState = std::make_unique<FractalNoiseViever>(*this);
 	//m_gameState = std::make_unique<Tanks>(*this);
 	//m_gameState = std::make_unique<Squares>(*this);
+	m_gameState = std::make_unique<Conway>(*this);
 }
 
 Core::~Core()
@@ -41,12 +43,14 @@ int Core::Init()
 	{
 		std::cout << "SDL subsystems initialized" << std::endl;
 
-		m_window = SDL_CreateWindow("Kobold2D", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_W, SCREEN_H, flags);
+		m_window = SDL_CreateWindow("Kobold2D", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, INITSCREEN_W, INITSCREEN_H, flags);
 		if (!m_window)
 		{
 			SDL_Log("Could not create a window: %s", SDL_GetError());
 			return -1;
 		}
+
+		UpdateScreenBounds();
 
 		m_renderer = SDL_CreateRenderer(m_window, -1, 0);
 		if (!m_renderer)
@@ -94,26 +98,34 @@ void Core::Clean()
 void Core::HandleEvents()
 {
 	PROFILE_FUNCTION();
-	SDL_Event m_event;
-	SDL_PollEvent(&m_event);
+	SDL_Event event;
+	SDL_PollEvent(&event);
 
-	switch (m_event.type)
+	switch (event.type)
 	{
 		case SDL_KEYDOWN:
 		{
 			//std::cout << "Keydown: " << m_event.key.keysym.sym << std::endl;
 
-			if (m_event.key.keysym.sym == SDLK_ESCAPE)
+			if (event.key.keysym.sym == SDLK_ESCAPE)
 			{
 				m_isRunning = false;
 				break;
 			}
 
-			Keys key = m_input.GetKeyMapping(m_event.key.keysym.sym);
+			Keys key = m_input.GetKeyMapping(event.key.keysym.sym);
 
 			if (key == Keys::INVALID)
 			{
-				std::cout << "Unmapped keycode: " << m_event.key.keysym.sym << std::endl;
+				std::cout << "Unmapped keycode: " << event.key.keysym.sym << std::endl;
+				break;
+			}
+
+			if (key == Keys::F11)
+			{
+				m_isFullscreen = !m_isFullscreen;
+				SDL_SetWindowFullscreen(m_window, m_isFullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+				UpdateScreenBounds();
 				break;
 			}
 
@@ -123,7 +135,7 @@ void Core::HandleEvents()
 		}
 		case SDL_KEYUP:
 		{
-			Keys key = m_input.GetKeyMapping(m_event.key.keysym.sym);
+			Keys key = m_input.GetKeyMapping(event.key.keysym.sym);
 
 			if (key == Keys::INVALID)
 			{
@@ -131,6 +143,42 @@ void Core::HandleEvents()
 			}
 			//std::cout << "Keyup: " << (int)key << std::endl;
 			m_gameState->HandleKeyUp(key);
+			break;
+		}
+		case SDL_MOUSEBUTTONDOWN:
+		{
+			Vec2i mousePosition(event.button.x, event.button.y);
+			MouseButtons button = MouseButtons::INVALID;
+			if (event.button.button == SDL_BUTTON_LEFT)
+				button = MouseButtons::LEFT;
+			else if (event.button.button == SDL_BUTTON_MIDDLE)
+				button = MouseButtons::MIDDLE;
+			else if (event.button.button == SDL_BUTTON_RIGHT)
+				button = MouseButtons::RIGHT;
+			else if (event.button.button == SDL_BUTTON_X1)
+				button = MouseButtons::ONE;
+			else if (event.button.button == SDL_BUTTON_X2)
+				button = MouseButtons::TWO;
+
+			m_gameState->HandleMouseDown(button, mousePosition);
+			break;
+		}
+		case SDL_MOUSEBUTTONUP:
+		{
+			Vec2i mousePosition(event.button.x, event.button.y);
+			MouseButtons button = MouseButtons::INVALID;
+			if (event.button.button == SDL_BUTTON_LEFT)
+				button = MouseButtons::LEFT;
+			else if (event.button.button == SDL_BUTTON_MIDDLE)
+				button = MouseButtons::MIDDLE;
+			else if (event.button.button == SDL_BUTTON_RIGHT)
+				button = MouseButtons::RIGHT;
+			else if (event.button.button == SDL_BUTTON_X1)
+				button = MouseButtons::ONE;
+			else if (event.button.button == SDL_BUTTON_X2)
+				button = MouseButtons::TWO;
+
+			m_gameState->HandleMouseUp(button, mousePosition);
 			break;
 		}
 		case SDL_QUIT:
@@ -387,7 +435,7 @@ SDL_Texture* Core::TextToTexture(TTF_Font* font, const char* text)
 	PROFILE_FUNCTION();
 	SDL_Color white = { 255, 255, 255 };
 
-	SDL_Surface* surfaceMessage = TTF_RenderText_Blended_Wrapped(font, text, white, SCREEN_W);
+	SDL_Surface* surfaceMessage = TTF_RenderText_Blended_Wrapped(font, text, white, screenBounds.x);
 	//SDL_Color black = { 255, 0, 0, 0 };
 	//SDL_Surface* surfaceMessage = TTF_RenderText_Shaded(font, text, white, black);
 	//SDL_Surface* surfaceMessage = TTF_RenderText_Solid(font, text, white);
@@ -424,7 +472,45 @@ void Core::RenderPixelMapToTexture(const Map2D<Color>& map, Texture& textureOUT)
 		}
 	}
 
-	SDL_SetRenderTarget(m_renderer, nullptr);
+	if (SDL_SetRenderTarget(m_renderer, nullptr) != 0)
+	{
+		SDL_Log("RenderPixelMapToTexture() failed: %s", SDL_GetError());
+	}
+
+	textureOUT.WriteSDLTexture(*tex);
+	textureOUT.m_width = w;
+	textureOUT.m_height = h;
+}
+
+void Core::RenderBMapToTexture(const BMap& map, Texture& textureOUT)
+{
+	int w = map.m_width;
+	int h = map.m_height;
+
+	SDL_Texture* tex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
+
+	SDL_SetRenderTarget(m_renderer, tex);
+	SDL_RenderClear(m_renderer);
+
+	for (int y = 0; y < h; ++y)
+	{
+		for (int x = 0; x < w; ++x)
+		{
+			Color c = map.Get(x, y) ? Colors::WHITE : Colors::BLACK;
+
+			Uint8 r = c.red;
+			Uint8 g = c.green;
+			Uint8 b = c.blue;
+
+			SDL_SetRenderDrawColor(m_renderer, r, g, b, 255);
+			SDL_RenderDrawPoint(m_renderer, x, y);
+		}
+	}
+
+	if (SDL_SetRenderTarget(m_renderer, nullptr) != 0)
+	{
+		SDL_Log("RenderPixelMapToTexture() failed: %s", SDL_GetError());
+	}
 
 	textureOUT.WriteSDLTexture(*tex);
 	textureOUT.m_width = w;
@@ -440,4 +526,22 @@ void Core::DrawFPS()
 	ss << floor(1.f / ((deltaTime + prevDeltaTime) / 2.f));
 
 	DrawText(ss.str(), 0, 0);
+}
+
+void Core::UpdateScreenBounds()
+{
+	if (m_isFullscreen)
+	{
+		int i = SDL_GetWindowDisplayIndex(m_window);
+		SDL_Rect j;
+		SDL_GetDisplayBounds(i, &j);
+
+		screenBounds.x = j.w;
+		screenBounds.y = j.h;
+	}
+	else
+	{
+		screenBounds.x = INITSCREEN_W;
+		screenBounds.y = INITSCREEN_H;
+	}
 }

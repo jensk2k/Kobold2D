@@ -10,13 +10,14 @@
 #include "Texture.h"
 #include "Color.h"
 #include "Input.h"
-
+#include "KTypes.h"
 
 #define PROFILING 0
 #define FULLSCREEN 0
-#define SCREEN_W 1280
-#define SCREEN_H 720
-
+#define INITSCREEN_W 1280
+#define INITSCREEN_H 720
+//#define SCREEN_W 2560
+//#define SCREEN_H 1440
 
 class GameState;
 
@@ -32,8 +33,9 @@ public:
 	void Update();
 	void Render();
 	int GetDisplayRefreshRate();
-	int GetWindowWidth() { return SCREEN_W; }
-	int GetWindowHeight() { return SCREEN_H; }
+	int GetWindowWidth() const { return screenBounds.x; }
+	int GetWindowHeight() const { return screenBounds.y; }
+	Vec2i GetScreenBounds() const { return screenBounds; }
 
 	void DrawRectangle(Vec2i position, int width, int height, Color color) const;
 	void DrawRectangleSolid(Vec2i position, int width, int height, Color color) const;
@@ -49,6 +51,7 @@ public:
 	SDL_Texture* TextToTexture(TTF_Font* font, const char* text);
 	//SDL_Texture* RenderPixelMapToTexture(const Map2D<Color>& map);
 	void RenderPixelMapToTexture(const Map2D<Color>& map, Texture& textureOUT);
+	void RenderBMapToTexture(const BMap& map, Texture& textureOUT);
 
 	bool IsRunning() { return m_isRunning; };
 	unsigned int GetCurrentTime() { return m_currentTime; }
@@ -57,11 +60,13 @@ public:
 
 private:
 	void DrawFPS();
+	void UpdateScreenBounds();
 
 	SDL_Renderer* m_renderer = nullptr;
 	SDL_Window* m_window = nullptr;
 
 	bool m_isRunning = false;
+	bool m_isFullscreen = FULLSCREEN;
 	float m_deltaTime = 0.f;
 	float m_prevDeltaTime = 0.f;
 	unsigned int m_currentTime = 0;
@@ -71,6 +76,7 @@ private:
 
 	std::unique_ptr<GameState> m_gameState;
 
+	Vec2i screenBounds;
 	Vec2i mousePosition;
 
 	Input m_input;

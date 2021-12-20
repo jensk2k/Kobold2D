@@ -91,3 +91,7 @@ void GameState::RenderPixelMapToTexture(const Map2D<Color>& map, Texture& textur
 {
 	m_core.RenderPixelMapToTexture(map, texture);
 }
+void GameState::RenderBMapToTexture(const BMap& map, Texture& texture)
+{
+	m_core.RenderBMapToTexture(map, texture);
+}

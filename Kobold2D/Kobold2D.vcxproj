@@ -155,6 +155,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Conway.cpp" />
     <ClCompile Include="src\JointAnimation.cpp" />
     <ClCompile Include="src\Squares.cpp" />
     <ClCompile Include="src\MathUtils.cpp" />
@@ -178,7 +179,9 @@
     <ClCompile Include="src\Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Conway.h" />
     <ClInclude Include="src\JointAnimation.h" />
+    <ClInclude Include="src\KTypes.h" />
     <ClInclude Include="src\Squares.h" />
     <ClInclude Include="src\MathUtils.h" />
     <ClInclude Include="src\Random.h" />

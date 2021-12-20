@@ -40,8 +40,8 @@ void ProcIK::Update()
 {
 	// Ping pong
 	{
-		int y = (SCREEN_H / 2) + static_cast<int>(100.f * sin(GetCurrentTime() * 0.005f));
-		pingPong = Vec2i(SCREEN_W / 3, y);
+		int y = (GetWindowHeight() / 2) + static_cast<int>(100.f * sin(GetCurrentTime() * 0.005f));
+		pingPong = Vec2i(GetWindowWidth() / 3, y);
 	}
 	
 	{
@@ -52,7 +52,7 @@ void ProcIK::Update()
 	
 	// IK
 	{
-		static Vec2f root(SCREEN_W / 3, SCREEN_H * 3 / 4);
+		static Vec2f root(GetWindowWidth() / 3, GetWindowHeight() * 3 / 4);
 		//Vector2 target = m_core.GetMousePosition();
 		Vec2f target(pingPong.x, pingPong.y);
 
@@ -62,7 +62,7 @@ void ProcIK::Update()
 	Vec2i animationCycleSS(animationCycle.x * 120, animationCycle.y * 120);
 
 	{
-		static Vec2i root(SCREEN_W * 2 / 3, SCREEN_H * 1 / 4);
+		static Vec2i root(GetWindowWidth() * 2 / 3, GetWindowHeight() * 1 / 4);
 		//Vector2 target = GetMousePosition();
 
 		Vec2i target = root + Vec2i(0, 320) + animationCycleSS;
@@ -76,7 +76,7 @@ void ProcIK::Update()
 	}
 
 	{
-		static Vec2f root((SCREEN_W * 2 / 3), SCREEN_H * 1 / 4);
+		static Vec2f root((GetWindowWidth() * 2 / 3), GetWindowHeight() * 1 / 4);
 		//Vector2 target = GetMousePosition();
 
 		Vec2f target = root + Vec2f(0.f, 320.f) - animationCycle * 120.f;
@@ -123,7 +123,7 @@ void ProcIK::Render()
 	DrawRectangleSolid(Vec2i(pingPong.x - 5, pingPong.y - 5), 10, 10, Colors::GREEN);
 
 	{
-		Vec2i center(SCREEN_W - 120, 120);
+		Vec2i center(GetWindowWidth() - 120, 120);
 		DrawCircle(center, 100, Colors::WHITE);
 		float lineLength = 110;
 		DrawLine(center + Vec2i(lineLength, 0), center + Vec2i(-lineLength, 0), Colors::WHITE);
