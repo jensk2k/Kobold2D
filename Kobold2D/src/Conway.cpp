@@ -14,7 +14,7 @@
 //#define RESX 640
 //#define RESY 360
 
-static void Randomize(BMap& map)
+static void ScrambleMap(BMap& map)
 {
 	for (int y = 0; y < map.m_height; y++)
 	{
@@ -102,7 +102,7 @@ Conway::Conway(Core& core)
 	, map2(RESX, RESY)
 	, mapPrev(RESX, RESY)
 {
-	Randomize(map2);
+	ScrambleMap(map2);
 }
 
 void Conway::Update()
@@ -128,10 +128,13 @@ void Conway::Update()
 		}
 	}
 
-	timer -= GetDeltaTime();
-	if (timer > 0.f)
+	if (!isPaused)
+		simTimer += GetDeltaTime();
+
+	updateTimer -= GetDeltaTime();
+	if (updateTimer > 0.f)
 		return;
-	timer = 1.f / FREQUENCY;
+	updateTimer = 1.f / FREQUENCY;
 
 	if (!isPaused)
 	{
@@ -168,10 +171,9 @@ void Conway::Update()
 
 		if (Detect2FrameStalemate(activeMap, mapPrev))
 		{
-			std::cout << "stalemate" << std::endl;
+			std::cout << "stalemate after " << (int)simTimer << " secs" << std::endl;
 
-			Randomize(map1);
-			Randomize(map2);
+			Reset();
 		}
 
 		useMap1 = !useMap1;
@@ -197,8 +199,8 @@ void Conway::HandleKeyDown(Keys key)
 {
 	if (key == Keys::R)
 	{
-		Randomize(map1);
-		Randomize(map2);
+		std::cout << "reset after " << (int)simTimer << " secs" << std::endl;
+		Reset();
 	}
 
 	if (key == Keys::SPACE)
@@ -221,4 +223,11 @@ void Conway::HandleMouseUp(MouseButtons button, Vec2i mousePosition)
 		leftMouseButtonDown = false;
 	if (button == MouseButtons::RIGHT)
 		rightMouseButtonDown = false;
+}
+
+void Conway::Reset()
+{
+	simTimer = 0.f;
+	ScrambleMap(map1);
+	ScrambleMap(map2);
 }

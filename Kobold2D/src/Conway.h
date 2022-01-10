@@ -12,13 +12,15 @@ public:
 	void HandleMouseUp(MouseButtons button, Vec2i mousePosition) override;
 
 private:
+	void Reset();
 	BMap map1;
 	BMap map2;
 	BMap mapPrev;
 	bool useMap1 = true;
 	Texture texture;
 
-	float timer = 0.f;
+	float updateTimer = 0.f;
+	float simTimer = 0.f;
 	bool isPaused = false;	
 
 	bool leftMouseButtonDown = false;

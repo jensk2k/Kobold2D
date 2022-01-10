@@ -1,24 +1,21 @@
 #include "Core.h"
 #include <iostream>
-
+#include <math.h>
 
 int main(int argc, char** argv)
 {
 	Core core;
 	core.Init();
 
-	int targetFrameRate = core.GetDisplayRefreshRate() + 1;
+	int targetFrameRate = core.GetDisplayRefreshRate();
 
 	Uint32 frameStart = 0;
 	Uint32 frameTime = 0;
-	float frameDelay = 1000.f / targetFrameRate;
+	Uint32 frameDelay = round(1000.f / targetFrameRate);
 	std::cout << "frame delay is " << frameDelay << " ms" << std::endl;
 
-
-	Uint32 time;
 	while (core.IsRunning())
 	{
-		time = SDL_GetTicks();
 		frameStart = SDL_GetTicks();
 
 		core.HandleEvents();
@@ -27,7 +24,7 @@ int main(int argc, char** argv)
 
 		frameTime = SDL_GetTicks() - frameStart;
 		if (frameDelay > frameTime)
-			SDL_Delay((Uint32)(frameDelay - frameTime));
+			SDL_Delay(frameDelay - frameTime);
 	}
 
 	core.Clean();

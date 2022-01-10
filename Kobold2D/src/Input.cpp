@@ -51,10 +51,20 @@ Input::Input() :
 		{ SDLK_n, Keys::N },
 		{ SDLK_m, Keys::M },
 
-		{ SDLK_F11, Keys::F11 }
+		{ SDLK_F1, Keys::F1 },
+		{ SDLK_F2, Keys::F2 },
+		{ SDLK_F3, Keys::F3 },
+		{ SDLK_F4, Keys::F4 },
+		{ SDLK_F5, Keys::F5 },
+		{ SDLK_F6, Keys::F6 },
+		{ SDLK_F7, Keys::F7 },
+		{ SDLK_F8, Keys::F8 },
+		{ SDLK_F9, Keys::F9 },
+		{ SDLK_F10, Keys::F10 },
+		{ SDLK_F11, Keys::F11 },
+		{ SDLK_F12, Keys::F12 },
 	}
-{
-}
+{}
 
 Keys Input::GetKeyMapping(SDL_Keycode keycode) const
 {

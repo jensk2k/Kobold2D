@@ -143,7 +143,7 @@ struct Vec2
 };
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const Vec2<T>& vec)
+inline std::ostream& operator<<(std::ostream& os, const Vec2<T>& vec)
 {
 	os << "(" << vec.x << "," << vec.y << ")";
 	return os;

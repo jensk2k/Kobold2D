@@ -137,7 +137,7 @@ void FractalNoiseViever::Update()
 
 void FractalNoiseViever::Render()
 {
-	DrawTexture(texture, Vec2i(), texture.m_width, texture.m_height);
+	DrawTexture(texture, Vec2i(), GetWindowWidth(), GetWindowHeight());
 
 	{
 		std::ostringstream ss;

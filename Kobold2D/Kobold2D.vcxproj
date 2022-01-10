@@ -155,6 +155,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Cells.cpp" />
     <ClCompile Include="src\Conway.cpp" />
     <ClCompile Include="src\JointAnimation.cpp" />
     <ClCompile Include="src\Squares.cpp" />
@@ -177,8 +178,11 @@
     <ClCompile Include="src\VectorGraphicsObject.cpp" />
     <ClCompile Include="src\Viewport.cpp" />
     <ClCompile Include="src\Transform.cpp" />
+    <ClCompile Include="src\Trails.cpp" />
+    <ClCompile Include="src\TrailMap.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Cells.h" />
     <ClInclude Include="src\Conway.h" />
     <ClInclude Include="src\JointAnimation.h" />
     <ClInclude Include="src\KTypes.h" />
@@ -205,6 +209,8 @@
     <ClInclude Include="src\VectorGraphicsObject.h" />
     <ClInclude Include="src\Viewport.h" />
     <ClInclude Include="src\Transform.h" />
+    <ClInclude Include="src\Trails.h" />
+    <ClInclude Include="src\TrailMap.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

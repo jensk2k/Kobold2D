@@ -5,12 +5,15 @@
 #include "Texture.h"
 #include "GameState.h"
 
-#define PIXEL_SCALE 16
+#define PIXEL_SCALE 2
 
-#define NOISE_W INITSCREEN_W / PIXEL_SCALE
-#define NOISE_H INITSCREEN_H / PIXEL_SCALE
+//#define NOISE_W INITSCREEN_W / PIXEL_SCALE
+//#define NOISE_H INITSCREEN_H / PIXEL_SCALE
 
-#define MULTI_THREADED 0
+#define NOISE_W 320
+#define NOISE_H 180
+
+#define MULTI_THREADED 1
 
 
 class MagicMist : public GameState

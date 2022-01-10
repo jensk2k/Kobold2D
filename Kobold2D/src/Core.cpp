@@ -13,6 +13,8 @@
 #include "Tanks.h"
 #include "Squares.h"
 #include "Conway.h"
+#include "Cells.h"
+#include "Trails.h"
 
 Core::Core() 
 {	
@@ -24,7 +26,9 @@ Core::Core()
 	//m_gameState = std::make_unique<FractalNoiseViever>(*this);
 	//m_gameState = std::make_unique<Tanks>(*this);
 	//m_gameState = std::make_unique<Squares>(*this);
-	m_gameState = std::make_unique<Conway>(*this);
+	//m_gameState = std::make_unique<Conway>(*this);
+	m_gameState = std::make_unique<Cells>(*this);
+	//m_gameState = std::make_unique<Trails>(*this);
 }
 
 Core::~Core()
@@ -71,8 +75,8 @@ int Core::Init()
 			std::cout << "Error TTF init" << std::endl;
 		}
 
-		//if (m_font = TTF_OpenFont("assets/RobotoMono-Regular.ttf", 24)) {}
-		if (m_font = TTF_OpenFont("assets/CenturyGothic.ttf", 24)) {}
+		if (m_font = TTF_OpenFont("assets/RobotoMono-Regular.ttf", 18)) {}
+		//if (m_font = TTF_OpenFont("assets/CenturyGothic.ttf", 18)) {}
 		else
 		{
 			std::cout << "TTF_OpenFont: " << TTF_GetError() << std::endl;
@@ -126,6 +130,12 @@ void Core::HandleEvents()
 				m_isFullscreen = !m_isFullscreen;
 				SDL_SetWindowFullscreen(m_window, m_isFullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 				UpdateScreenBounds();
+				break;
+			}
+
+			if (key == Keys::F10)
+			{
+				m_FPSCounterEnabled = !m_FPSCounterEnabled;
 				break;
 			}
 
@@ -217,12 +227,12 @@ void Core::Render()
 
 	m_gameState->Render();
 
-	DrawFPS();
+	if (m_FPSCounterEnabled)
+		DrawFPS();
 	//DrawStats();
 
 	SDL_RenderPresent(m_renderer);
 
-	m_prevDeltaTime = m_deltaTime;
 	m_deltaTime = (SDL_GetTicks() - m_currentTime) / 1000.f;
 
 	m_currentTime = SDL_GetTicks();
@@ -520,10 +530,22 @@ void Core::RenderBMapToTexture(const BMap& map, Texture& textureOUT)
 void Core::DrawFPS()
 {
 	PROFILE_FUNCTION();
+
+	//float deltaTime = static_cast<float>(m_deltaTime);
+
+	fpsTimer += m_deltaTime;
+	fpsCounter++;
+	if (fpsTimer > .5f)
+	{
+		fps = fpsCounter / fpsTimer;
+		fpsCounter = 0;
+		fpsTimer = 0.f;
+	}
+
 	std::ostringstream ss;
-	float deltaTime = static_cast<float>(m_deltaTime);
-	float prevDeltaTime = static_cast<float>(m_prevDeltaTime);
-	ss << floor(1.f / ((deltaTime + prevDeltaTime) / 2.f));
+	ss << "" << screenBounds.x << "x" << screenBounds.y << " ";
+	//ss << floor(1.f / m_deltaTime);
+	ss << fps;
 
 	DrawText(ss.str(), 0, 0);
 }

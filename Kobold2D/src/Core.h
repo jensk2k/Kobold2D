@@ -67,8 +67,11 @@ private:
 
 	bool m_isRunning = false;
 	bool m_isFullscreen = FULLSCREEN;
+	bool m_FPSCounterEnabled = true;
 	float m_deltaTime = 0.f;
-	float m_prevDeltaTime = 0.f;
+	int fpsCounter = 0;
+	float fpsTimer = 0.f;
+	int fps = 0;
 	unsigned int m_currentTime = 0;
 	
 	//Texture m_testTexture;
@@ -76,7 +79,7 @@ private:
 
 	std::unique_ptr<GameState> m_gameState;
 
-	Vec2i screenBounds;
+	Vec2i screenBounds = Vec2i(INITSCREEN_W, INITSCREEN_H);
 	Vec2i mousePosition;
 
 	Input m_input;

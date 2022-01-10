@@ -23,3 +23,9 @@ namespace Colors
 	static Color CYAN = Color(0, 255, 255, 255);
 	static Color MAGENTA = Color(255, 0, 255, 255);
 }
+
+inline std::ostream& operator<<(std::ostream& os, const Color& col)
+{
+	os << "[" << (int)col.red << " " << (int)col.green << " " << (int)col.blue << "]";
+	return os;
+}
