@@ -1,41 +1,62 @@
 #pragma once
 #include "GameState.h"
 #include "TrailMap.h"
+#include "Timer.h"
+#include "MathUtils.h"
+#include "Histogram.h"
 
 struct Genes
 {
 	int generation = 1;
 	Color color = Colors::RED;
-	float size = 0.5f;
-	float maxSpeed = 5.f;
-	float foodDetectionRange = 20.f;
-	float repulsionRange = 5.f;
-	float propagationInterval = 5.f;
-	float propagationMinEnergy = 0.5f;
-	float satiation = 1.f; // percentage
-	float mutationProbability = .25f;// percentage
+	float matureSize = 0.f;
+	float startSize = 0.f;
+	float maxSpeed = 0.f;
+	float detectionRange = 0.f;
+	float propagationInterval = 0.f;
+	float propagationMinEnergy = 0.f;
+	float mutationProbability = 0.f;// percentage
+	float lifespan = 0.f;
+	float matureAge = 0.f;
+	float diet = 0.f; // 0 = herbivore, 1 = carnivore
+};
 
-	float MaxEnergy() const { return size * 10.f; }
+struct NearestFood
+{
+	Vec2f position;
+	bool exists = false;
 };
 
 struct Cell
 {
 	Vec2f position;
 	Vec2f velocity;
+	Vec2f steeringDirection;
+	NearestFood nearestPlant;
+	NearestFood nearestMeat;
 	Genes genes;
 	float energy;
-	float propagationTimer = 0.f;
+	Timer propagationTimer;
+	float age = 0.f;
 
-	Vec2f repDirection;
+	float Size() const 
+	{ 
+		return genes.startSize + (MathUtils::Min(1.f, (age / genes.matureAge)) * (genes.matureSize - genes.startSize)); 
+	}
+	float MaxEnergy() const { return Size() * 10.f; }
 };
 
-class Histogram
+enum class FoodState
 {
-public:
-	void RecordSample(float sample);
-	void Draw(GameState& gameState, Vec2i position, int histogramSize, const std::string& title) const;
-private:
-	std::vector<float> histogram;
+	Growing,
+	Plant,
+	Meat,
+};
+
+struct Food
+{
+	Timer growthTimer = 0.f;
+	FoodState state = FoodState::Growing;
 };
 
 class Cells : public GameState
@@ -47,33 +68,23 @@ public:
 	void HandleKeyDown(Keys key) override;
 
 private:
-	void PropagateFood();
-	void SpeadFood(int n);
 	void Reset();
-	void PropagateCell(const Cell* parent);
+	void PropagateCell(Vec2f spawnPosition, const Genes* parentGenes, bool disableMutation);
 	Vec2f RandomScreenPosition();
 	void CalcSteering(Vec2f steeringDirection, bool shouldBreak, float maxSpeed, float acceleration, float deceleration, Vec2f& position, Vec2f& velocity);
 	int GetLastestGen() const;
+	float MutateGene(float parentGene, const std::string& name, float min, float max = -1.f)  const;
+	Vec2i WorldToFoodCoord(Vec2f worldPos) const;
 	TrailMap trailMap;
-	//void DrawHistogram();
 	std::vector<Cell> cells;
-	std::vector<Vec2f> food;
+	Map2D<Food> food;
 
-	//std::vector<Genes> histogram;
 	float histogramSampleTimer = 0.f;
 
-	float tickTimer = 0.f;
+	Timer metabolismTimer;
+
 	float simTime = 0.f;
 
 	std::map<std::string, Histogram> histograms;
-
-	//Histogram populationHistogram;
-	//Histogram sizeHistogram;
-	//Histogram speedHistogram;
-	//Histogram foodRangeHistogram;
-	//Histogram repulsionHistogram;
-	//Histogram propagationIntervalHistogram;
-	//Histogram propagationMinEnergyHistogram;
-	//Histogram satiaionHistogram;
 };
 

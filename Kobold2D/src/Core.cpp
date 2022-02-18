@@ -15,6 +15,9 @@
 #include "Conway.h"
 #include "Cells.h"
 #include "Trails.h"
+#include "CPUShader.h"
+#include "NeuralNetworkColorDemo.h"
+#include "NeuralNetworkDemo.h"
 
 Core::Core() 
 {	
@@ -27,8 +30,11 @@ Core::Core()
 	//m_gameState = std::make_unique<Tanks>(*this);
 	//m_gameState = std::make_unique<Squares>(*this);
 	//m_gameState = std::make_unique<Conway>(*this);
-	m_gameState = std::make_unique<Cells>(*this);
+	//m_gameState = std::make_unique<Cells>(*this);
 	//m_gameState = std::make_unique<Trails>(*this);
+	//m_gameState = std::make_unique<CPUShader>(*this);
+	//m_gameState = std::make_unique<NeuralNetworkColorDemo>(*this);
+	m_gameState = std::make_unique<NeuralNetworkDemo>(*this);
 }
 
 Core::~Core()
@@ -476,8 +482,10 @@ void Core::RenderPixelMapToTexture(const Map2D<Color>& map, Texture& textureOUT)
 			Uint8 r = c.red;
 			Uint8 g = c.green;
 			Uint8 b = c.blue;
+			Uint8 a = c.alpha;
 
-			SDL_SetRenderDrawColor(m_renderer, r, g, b, 255);
+			SDL_SetRenderDrawColor(m_renderer, r, g, b, a);
+			
 			SDL_RenderDrawPoint(m_renderer, x, y);
 		}
 	}

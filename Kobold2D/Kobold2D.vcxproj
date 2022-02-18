@@ -155,6 +155,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\NeuralNetwork.cpp" />
+    <ClCompile Include="src\Histogram.cpp" />
+    <ClCompile Include="src\NeuralNetworkDemo.cpp" />
+    <ClCompile Include="src\NeuralNetworkColorDemo.cpp" />
+    <ClCompile Include="src\CPUShader.cpp" />
     <ClCompile Include="src\Cells.cpp" />
     <ClCompile Include="src\Conway.cpp" />
     <ClCompile Include="src\JointAnimation.cpp" />
@@ -182,6 +187,13 @@
     <ClCompile Include="src\TrailMap.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\NeuralNetwork.h" />
+    <ClInclude Include="src\Histogram.h" />
+    <ClInclude Include="src\NeuralNetworkDemo.h" />
+    <ClInclude Include="src\Matrix.h" />
+    <ClInclude Include="src\NeuralNetworkColorDemo.h" />
+    <ClInclude Include="src\PrecisionStopWatch.h" />
+    <ClInclude Include="src\CPUShader.h" />
     <ClInclude Include="src\Cells.h" />
     <ClInclude Include="src\Conway.h" />
     <ClInclude Include="src\JointAnimation.h" />
@@ -211,6 +223,7 @@
     <ClInclude Include="src\Transform.h" />
     <ClInclude Include="src\Trails.h" />
     <ClInclude Include="src\TrailMap.h" />
+    <ClInclude Include="src\Timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

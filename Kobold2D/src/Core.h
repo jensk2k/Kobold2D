@@ -14,8 +14,10 @@
 
 #define PROFILING 0
 #define FULLSCREEN 0
-#define INITSCREEN_W 1280
-#define INITSCREEN_H 720
+//#define INITSCREEN_W 1280
+//#define INITSCREEN_H 720
+#define INITSCREEN_W 1920
+#define INITSCREEN_H 1080
 //#define SCREEN_W 2560
 //#define SCREEN_H 1440
 
@@ -57,6 +59,7 @@ public:
 	unsigned int GetCurrentTime() { return m_currentTime; }
 	Vec2i GetMousePosition() { return mousePosition; }
 	float GetDeltaTime() { return m_deltaTime; }
+	bool IsFPSCounterEnabled() const { return m_FPSCounterEnabled; }
 
 private:
 	void DrawFPS();
@@ -67,7 +70,7 @@ private:
 
 	bool m_isRunning = false;
 	bool m_isFullscreen = FULLSCREEN;
-	bool m_FPSCounterEnabled = true;
+	bool m_FPSCounterEnabled = false;
 	float m_deltaTime = 0.f;
 	int fpsCounter = 0;
 	float fpsTimer = 0.f;

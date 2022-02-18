@@ -4,13 +4,12 @@
 
 template <typename T>
 struct Vec2
-{	T x{};
+{	
+	T x{};
 	T y{};
 	Vec2(){}
 	Vec2(T x, T y) : x(x), y(y) {}
 	Vec2(const Vec2<T>& other) : x(other.x), y(other.y) {}
-	//template <typename T2> 
-	//Vec2(const Vec2<T2>& other)	{ x = other.x; y = other.y; }
 
 	Vec2<T> operator+(const Vec2<T>& other) const
 	{

@@ -35,10 +35,11 @@ public:
 	void DrawCircleSolid(Vec2i c, int radius, Color color);
 	void DrawArrowWS(Vec2f origin, Vec2f direction, float scale, Color colo);
 	void DrawText(const std::string& str, int x, int y);
-	int GetWindowWidth();
-	int GetWindowHeight();
+	int GetWindowWidth() const;
+	int GetWindowHeight() const;
 	unsigned int GetCurrentTime();
 	float GetDeltaTime();
+	bool IsFPSCounterEnabled() const;
 	Vec2i GetMousePosition();
 	void RenderPixelMapToTexture(const Map2D<Color>& map, Texture& texture);
 	void RenderBMapToTexture(const BMap& map, Texture& texture);

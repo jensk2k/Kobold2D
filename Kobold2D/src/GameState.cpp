@@ -62,12 +62,12 @@ void GameState::DrawText(const std::string& str, int x, int y)
 	m_core.DrawText(str, x, y);
 }
 
-int GameState::GetWindowWidth() 
+int GameState::GetWindowWidth() const
 { 
 	return m_core.GetWindowWidth(); 
 }
 
-int GameState::GetWindowHeight() 
+int GameState::GetWindowHeight() const
 { 
 	return m_core.GetWindowHeight(); 
 }
@@ -80,6 +80,11 @@ unsigned int GameState::GetCurrentTime()
 float GameState::GetDeltaTime()
 {
 	return m_core.GetDeltaTime();
+}
+
+bool GameState::IsFPSCounterEnabled() const
+{
+	return m_core.IsFPSCounterEnabled();
 }
 
 Vec2i GameState::GetMousePosition()
