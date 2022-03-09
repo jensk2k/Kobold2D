@@ -108,7 +108,7 @@ void CPUShader::Update()
 			//colorMap(x, y) = Color(f * 255, (1.f-f)  * 255, (1.f-f) * 255);
 			//colorMap(x, y) = Color(f * 255, f * 255, f * 255);
 
-			Color c = f < 0.5f ? InterpolateColor(col1, col2, f * 2.f) : InterpolateColor(col2, col3, (f - 0.5f) * 2.0f);
+			Color c = f < 0.5f ? Color::Lerp(col1, col2, f * 2.f) : Color::Lerp(col2, col3, (f - 0.5f) * 2.0f);
 
 			colorMap(x, y) = c;
 			//colorMap(x, y) = Color(f * col1.red, f * col1.green, f * col1.blue);

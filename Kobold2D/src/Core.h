@@ -50,9 +50,10 @@ public:
 
 	SDL_Texture* LoadSDLTexture(const char* texturePath);
 	void LoadTexture(const char* texturePath, Texture& texture, int width, int height);
+	void LoadImageMap(const char* texturePath, Map2D<Color>& colorMap) const;
 	SDL_Texture* TextToTexture(TTF_Font* font, const char* text);
 	//SDL_Texture* RenderPixelMapToTexture(const Map2D<Color>& map);
-	void RenderPixelMapToTexture(const Map2D<Color>& map, Texture& textureOUT);
+	void RenderPixelMapToTexture(const Map2D<Color>& map, Texture& textureOUT) const;
 	void RenderBMapToTexture(const BMap& map, Texture& textureOUT);
 
 	bool IsRunning() { return m_isRunning; };
@@ -77,7 +78,6 @@ private:
 	int fps = 0;
 	unsigned int m_currentTime = 0;
 	
-	//Texture m_testTexture;
 	TTF_Font* m_font = nullptr;
 
 	std::unique_ptr<GameState> m_gameState;

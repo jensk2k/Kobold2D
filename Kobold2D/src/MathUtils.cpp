@@ -9,6 +9,15 @@ float MathUtils::Clamp(float f, float min, float max)
     return f;
 }
 
+//int MathUtils::Clamp(int f, int min, int max)
+//{
+//    if (f < min)
+//        return min;
+//    if (f > max)
+//        return max;
+//    return f;
+//}
+
 float MathUtils::Max(float a, float b)
 {
     return a > b ? a : b;

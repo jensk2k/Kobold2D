@@ -88,7 +88,7 @@ void TrailMap::Update(float propagationTime)
 		{
 			Color curColor = inactiveMap(x, y);
 			Color avgNeighbors = GetAvgOfNeighbors(inactiveMap, Vec2i(x, y));
-			activeMap(x, y) = InterpolateColor(curColor, avgNeighbors, gameState.GetDeltaTime() * propagationTime);
+			activeMap(x, y) = Color::Lerp(curColor, avgNeighbors, gameState.GetDeltaTime() * propagationTime);
 			//activeMap(x, y) = avgNeighbors;
 		}
 	}

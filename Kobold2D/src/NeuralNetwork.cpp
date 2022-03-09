@@ -63,7 +63,7 @@ void NeuralNetwork::CalcActivations(const Matrix& inputs, std::vector<Matrix>& a
 
 	Matrix layer = inputs;
 	activations[0] = layer;
-	for (int i = 0; i < weights.size(); i++)
+	for (unsigned i = 0; i < weights.size(); i++)
 	{
 		layer = Matrix::Add(Matrix::Product(weights[i], layer), biases[i]);
 
@@ -100,7 +100,7 @@ void NeuralNetwork::BackPropagate(const Matrix& inputs, const Matrix& targets)
 			gradients(0, j) = PsuedoDerivativeSigmoid(activationsRight(0, j));
 		}
 		gradients = Matrix::HadamardProduct(gradients, errors);
-		gradients = Matrix::Scale(gradients, learningRate); // learning rate
+		gradients = Matrix::Scale(gradients, learningRate); // appy learning rate
 
 		Matrix activationsLeftTransposed = Matrix::Transpose(activationsLeft);
 		Matrix weightsGrad = Matrix::Product(gradients, activationsLeftTransposed);
@@ -113,4 +113,18 @@ void NeuralNetwork::BackPropagate(const Matrix& inputs, const Matrix& targets)
 
 		errors = Matrix::Product(weightsTransposed, errors);
 	}
+}
+
+void NeuralNetwork::SetLayerShapes(const std::vector<unsigned>& layerShapes)
+{
+	this->layerShapes = layerShapes;
+	weights.clear();
+	biases.clear();
+
+	for (int i = 0; i < layerShapes.size() - 1; i++)
+	{
+		weights.push_back(Matrix(layerShapes[i], layerShapes[i + 1]));
+		biases.push_back(Matrix(1, layerShapes[i + 1]));
+	}
+	RandomizeWeightsAndBiases();
 }

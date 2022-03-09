@@ -10,7 +10,14 @@ public:
 	int m_width;
 	int m_height;
 
-	Map2D(int width, int height) : 
+	Map2D() :
+		m_map(0, T()),
+		m_width(0),
+		m_height(0)
+	{
+	}
+
+	Map2D(unsigned width, unsigned height) :
 		m_map(width * height, T()),
 		m_width(width), 
 		m_height(height)

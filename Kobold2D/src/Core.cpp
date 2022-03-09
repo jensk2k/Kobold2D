@@ -16,8 +16,12 @@
 #include "Cells.h"
 #include "Trails.h"
 #include "CPUShader.h"
-#include "NeuralNetworkColorDemo.h"
 #include "NeuralNetworkDemo.h"
+#include "NNFilter.h"
+#include "GAMetaBalls.h"
+#include "GeneticAlgorithmDemo.h"
+#include "CTF.h"
+#include "PhysicsDemo.h"
 
 Core::Core() 
 {	
@@ -33,8 +37,12 @@ Core::Core()
 	//m_gameState = std::make_unique<Cells>(*this);
 	//m_gameState = std::make_unique<Trails>(*this);
 	//m_gameState = std::make_unique<CPUShader>(*this);
-	//m_gameState = std::make_unique<NeuralNetworkColorDemo>(*this);
-	m_gameState = std::make_unique<NeuralNetworkDemo>(*this);
+	//m_gameState = std::make_unique<NeuralNetworkDemo>(*this);
+	//m_gameState = std::make_unique<NNFilter>(*this);
+	//m_gameState = std::make_unique<GAMetaBalls>(*this);
+	//m_gameState = std::make_unique<GeneticAlgorithmDemo>(*this);
+	m_gameState = std::make_unique<CTF>(*this);
+	//m_gameState = std::make_unique<PhysicsDemo>(*this);
 }
 
 Core::~Core()
@@ -68,12 +76,6 @@ int Core::Init()
 			SDL_Log("Could not create a renderer: %s", SDL_GetError());
 			return -1;
 		}
-
-		//{
-		//	m_testTexture.sdlTexture = LoadTexture("assets/moon-stars.jpg");
-		//	m_testTexture.w = 626;
-		//	m_testTexture.h = 626;
-		//}
 
 		SDL_ShowCursor(SDL_DISABLE);
 
@@ -421,6 +423,7 @@ SDL_Texture* Core::LoadSDLTexture(const char* texturePath)
 	SDL_Texture* texture = nullptr;
 
 	SDL_Surface* surface = IMG_Load(texturePath);
+
 	if (surface)
 	{
 		std::cout << texturePath << " loaded!" << std::endl;
@@ -430,6 +433,10 @@ SDL_Texture* Core::LoadSDLTexture(const char* texturePath)
 		{
 			printf("LoadSDLTexture failed: %s\n", SDL_GetError());
 		}
+	}
+	else
+	{
+		printf("IMG_Load: %s\n", IMG_GetError());
 	}
 
 	SDL_FreeSurface(surface);
@@ -444,6 +451,74 @@ void Core::LoadTexture(const char* texturePath, Texture& texture, int width, int
 	texture.WriteSDLTexture(*sdlTexture);
 	texture.m_width = width;
 	texture.m_height = height;
+}
+
+static Color GetSurfaceColor(SDL_Surface* surface, int x, int y)
+{
+	Uint8 bpp = surface->format->BytesPerPixel;
+	Uint8* p = (Uint8*)surface->pixels + y * surface->pitch + x * bpp;
+
+	Uint32 ui32Color;
+
+	if (bpp == 1)
+	{
+		ui32Color = *p;
+	}
+	else if (bpp == 2)
+	{
+		ui32Color = *(Uint16*)p;
+	}
+	else if (bpp == 3)
+	{
+		if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+			ui32Color = p[0] << 16 | p[1] << 8 | p[2];
+		else
+			ui32Color = p[0] | p[1] << 8 | p[2] << 16;
+	}
+	else if (bpp == 4)
+	{
+		ui32Color = *(Uint32*)p;
+	}
+	else
+	{
+		ui32Color = 0;
+	}
+
+	Uint8 r = ui32Color & 0xFF; 
+	Uint8 g = (ui32Color >> 8) & 0xFF;
+	Uint8 b = (ui32Color >> 16) & 0xFF;
+	Uint8 a = 255;
+
+	Color col(r, g, b, a);
+
+	return col;
+}
+
+void Core::LoadImageMap(const char* texturePath, Map2D<Color>& colorMap) const
+{
+	SDL_Surface* surface = IMG_Load(texturePath);
+
+	if (!surface)
+	{
+		printf("IMG_Load: %s\n", IMG_GetError());
+		return;
+	}
+
+	Uint8 bpp = surface->format->BytesPerPixel;
+
+	colorMap = Map2D<Color>(surface->w, surface->h);
+
+	for (int y = 0; y < colorMap.m_height; y++)
+	{
+		for (int x = 0; x < colorMap.m_width; x++)
+		{
+
+			Color col = GetSurfaceColor(surface, x, y);
+			colorMap(x, y) = col;
+		}
+	}
+
+	SDL_FreeSurface(surface);
 }
 
 SDL_Texture* Core::TextToTexture(TTF_Font* font, const char* text)
@@ -463,7 +538,7 @@ SDL_Texture* Core::TextToTexture(TTF_Font* font, const char* text)
 	return tex;
 }
 
-void Core::RenderPixelMapToTexture(const Map2D<Color>& map, Texture& textureOUT)
+void Core::RenderPixelMapToTexture(const Map2D<Color>& map, Texture& textureOUT) const
 {
 	int w = map.m_width;
 	int h = map.m_height;

@@ -23,6 +23,7 @@ NeuralNetworkDemo::NeuralNetworkDemo(Core& core)
 	: GameState(core)
 	, nn(0.1f, { 2, 2, 1 })
 	, colorMap(28, 28)
+	, nnDrawer(*this, nn)
 {
 	trainingData = 
 	{
@@ -73,7 +74,7 @@ void NeuralNetworkDemo::Render()
 
 	int bottomYSpace = GetWindowHeight() - height - 3.f * margin;
 
-	DrawNeuralNetwork(nn, topLeft, width, height);
+	nnDrawer.DrawNeuralNetwork(&displayedInput, topLeft, width, height, true, 20);
 		
 	{
 		for (int y = 0; y < colorMap.m_height; y++)
@@ -88,12 +89,7 @@ void NeuralNetworkDemo::Render()
 
 				float val = output(0, 0);
 
-				//Color c(255 * val, 255 * val, 255 * val);
-				Color c = InterpolateColor(Colors::BLACK, Colors::WHITE, val);
-				//Color col1 = Colors::CYAN;
-				//Color col2 = Colors::MAGENTA;
-				//Color col3 = Colors::YELLOW;
-				//Color c = val < 0.5f ? InterpolateColor(col1, col2, val * 2.f) : InterpolateColor(col2, col3, (val - 0.5f) * 2.0f);
+				Color c = Color::Lerp(Colors::BLACK, Colors::WHITE, val);
 
 				colorMap(x, y) = c;
 			}
@@ -129,96 +125,6 @@ void NeuralNetworkDemo::Render()
 
 		DrawText(ss.str(), textPos.x - 16, textPos.y - 13);
 	}
-}
-
-void NeuralNetworkDemo::DrawNeuralNetwork(const NeuralNetwork& nn, Vec2i topLeft, int width, int height)
-{
-	int neuronRadius = 20;
-
-	DrawRectangle(topLeft, width, height, Colors::WHITE);
-
-	// Draw weights
-	for (int layer = 0; layer < nn.weights.size(); layer++)
-	{
-		for (int col = 0; col < nn.weights[layer].Columns(); col++)
-		{
-			for (int row = 0; row < nn.weights[layer].Rows(); row++)
-			{
-				float weight = nn.weights[layer](col, row);
-
-				Vec2i neuronPos1 = GetNeuronDrawPosition(topLeft, width, height, nn, layer, col);
-				Vec2i neuronPos2 = GetNeuronDrawPosition(topLeft, width, height, nn, layer + 1, row);
-
-				Vec2f dir = (Vec2f((float)neuronPos2.x, (float)neuronPos2.y) - Vec2f((float)neuronPos1.x, (float)neuronPos1.y)).Normalized();
-				Vec2i offset((int)dir.x * neuronRadius - 1, (int)dir.y * neuronRadius - 1);
-
-				float sigW = Sigmoid(weight); // to flatten
-
-				//Color c = weight < 0.f ? Color(sigW * 255, 0, 0) : Color(0, 0, sigW * 255);
-				//Color c(255 * sigW, 255 * sigW, 255 * sigW);
-				Color c = InterpolateColor(Colors::RED, Colors::BLUE, sigW);
-
-				DrawLine(neuronPos1 + offset, neuronPos2 - offset, c);
-
-				std::ostringstream ss;
-				ss << (int)(10 * weight) / 10.f;
-
-				Vec2i textPos = neuronPos1 + ((neuronPos2 - neuronPos1) / 4);
-
-				DrawText(ss.str(), textPos.x - 16, textPos.y - 13);
-			}
-		}
-	}
-	
-	std::vector<Matrix> activations;
-	nn.CalcActivations(displayedInput, activations);
-
-	// calc errors
-	Matrix targets = GetCorrectXOROutput(displayedInput);
-
-	// Draw nodes
-	for (int i = 0; i < nn.layerShapes.size(); i++)
-	{
-		Matrix activationsLayer = activations[i]; 
-
-		// neuron
-		for (unsigned j = 0; j < nn.layerShapes[i]; j++)
-		{
-			float neuronActivaion = activationsLayer(0, j);
-
-			Vec2i centerPos = GetNeuronDrawPosition(topLeft, width, height, nn, i, j);
-
-			DrawCircleSolid(centerPos, neuronRadius, Color(255 * neuronActivaion, 255 * neuronActivaion, 255 * neuronActivaion));
-			DrawCircle(centerPos, neuronRadius, Colors::WHITE);
-
-			if (i == 0)
-				continue;
-			{
-				float bias = nn.biases[i - 1](0, j);
-
-				std::ostringstream ss;
-				ss << (int)(10 * bias) / 10.f;
-
-				DrawText(ss.str(), centerPos.x - 16, centerPos.y - 13 - 32);
-			}
-		}
-	}
-}
-
-Vec2i NeuralNetworkDemo::GetNeuronDrawPosition(Vec2i topLeft, int rectWidth, int rectHeight, const NeuralNetwork& nn, int layerIndex, int neuronIndex)
-{
-	int edgeMargin = 40;
-
-	int xDrawSpace = rectWidth - 2 * edgeMargin;
-	int yDrawSpace = rectHeight - 2 * edgeMargin;
-
-	int layerCount = nn.layerShapes.size();
-	int neuronCountInLayer = nn.layerShapes[layerIndex];
-
-	int x = topLeft.x + edgeMargin + (layerIndex + 0.5f) * (xDrawSpace / layerCount);
-	int y = topLeft.y + edgeMargin + (neuronIndex + 0.5f) * (yDrawSpace / neuronCountInLayer);
-
-	return Vec2i(x, y);
 }
 
 void NeuralNetworkDemo::HandleKeyDown(Keys key)

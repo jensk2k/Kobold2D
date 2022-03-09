@@ -1,6 +1,7 @@
 #include "VectorGraphicsObject.h"
 #include "Color.h"
 #include "GameState.h"
+#include "Viewport.h"
 
 VectorGraphicsObject::VectorGraphicsObject(Transform& transform, std::vector<Vec2f>& vertices)
 	: transform(transform)
@@ -13,7 +14,7 @@ VectorGraphicsObject::VectorGraphicsObject(Transform& transform, std::vector<Vec
 	}
 }
 
-void VectorGraphicsObject::Draw(GameState& gameState) const
+void VectorGraphicsObject::Draw(GameState& gameState, const Viewport& viewport) const
 {
 	float cosR = transform.GetHeadingCosine();
 	float sinR = transform.GetHeadingSine();
@@ -33,8 +34,8 @@ void VectorGraphicsObject::Draw(GameState& gameState) const
 			Vec2f v1Rot = Vec2f::RotateAroundPoint(v1Trans, transform.position, cosR, sinR);
 			Vec2f v2Rot = Vec2f::RotateAroundPoint(v2Trans, transform.position, cosR, sinR);
 
-			Vec2i v1ss = gameState.viewport.WorldToScreenSpace(v1Rot);
-			Vec2i v2ss = gameState.viewport.WorldToScreenSpace(v2Rot);
+			Vec2i v1ss = viewport.WorldToScreenSpace(v1Rot);
+			Vec2i v2ss = viewport.WorldToScreenSpace(v2Rot);
 
 			gameState.DrawLine(v1ss, v2ss, Colors::WHITE);
 		}

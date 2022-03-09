@@ -1,7 +1,6 @@
 #include "Viewport.h"
 #include "GameState.h"
 
-
 Vec2i Viewport::WorldToScreenSpace(Vec2f worldPos) const
 {
 	Vec2f worldPosRelativeToVP = worldPos - position;
@@ -67,6 +66,47 @@ void Viewport::DrawGrid(GameState& gameState, int scale)
 
 	gameState.DrawLine(WorldToScreenSpace(Vec2f(-1.f, 0.f)), WorldToScreenSpace(Vec2f(1.f, 0.f)), Colors::WHITE);
 	gameState.DrawLine(WorldToScreenSpace(Vec2f(0.f, -1.f)), WorldToScreenSpace(Vec2f(0.f, 1.f)), Colors::WHITE);
+}
+
+void Viewport::DrawRectangle(Vec2f position, float width, float height, Color color) const
+{
+	gameState.DrawRectangle(WorldToScreenSpace(position), width * scale, height * scale, color);
+}
+
+void Viewport::DrawRectangleSolid(Vec2f position, float width, float height, Color color) const
+{
+	gameState.DrawRectangleSolid(WorldToScreenSpace(position), width * scale, height * -scale, color);
+}
+
+void Viewport::DrawCircle(Vec2f c, float radius, Color color)
+{
+	gameState.DrawCircle(WorldToScreenSpace(c), radius * scale, color);
+}
+
+void Viewport::DrawCircleSolid(Vec2f c, float radius, Color color)
+{
+	gameState.DrawCircleSolid(WorldToScreenSpace(c), radius * scale, color);
+}
+
+void Viewport::DrawLine(Vec2f v1, Vec2f v2, Color color)
+{
+	gameState.DrawLine(WorldToScreenSpace(v1), WorldToScreenSpace(v2), color);
+}
+
+void Viewport::DrawArrow(Vec2f origin, Vec2f direction, float scale, Color color)
+{
+	Vec2f left(-direction.y, direction.x);
+	Vec2f right(direction.y, -direction.x);
+
+	Vec2i originSS = WorldToScreenSpace(origin);
+	Vec2i targetSS = WorldToScreenSpace(origin + direction * scale);
+
+	Vec2i rightChev = WorldToScreenSpace(origin + direction * scale + right * 0.2f * scale - direction * 0.2f * scale);
+	Vec2i leftChev = WorldToScreenSpace(origin + direction * scale + left * 0.2f * scale - direction * 0.2f * scale);
+
+	gameState.DrawLine(originSS, targetSS, color);
+	gameState.DrawLine(targetSS, rightChev, color);
+	gameState.DrawLine(targetSS, leftChev, color);
 }
 
 void ViewPortControl::HandleKeyDown(Keys key)

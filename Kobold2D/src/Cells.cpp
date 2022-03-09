@@ -5,6 +5,7 @@
 
 Cells::Cells(Core& core)
 	: GameState(core)
+	, viewport(*this, 12.7f)
 	, trailMap(*this, 160, 90)
 	, metabolismTimer(1.f)
 	, food(160, 90)

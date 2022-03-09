@@ -75,6 +75,8 @@ private:
 	int GetLastestGen() const;
 	float MutateGene(float parentGene, const std::string& name, float min, float max = -1.f)  const;
 	Vec2i WorldToFoodCoord(Vec2f worldPos) const;
+
+	Viewport viewport;
 	TrailMap trailMap;
 	std::vector<Cell> cells;
 	Map2D<Food> food;

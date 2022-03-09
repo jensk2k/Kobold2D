@@ -4,6 +4,7 @@
 #include <vector>
 #include "Histogram.h"
 #include "NeuralNetwork.h"
+#include "NeuralNetworkDrawer.h"
 
 class NeuralNetworkDemo : public GameState
 {
@@ -11,8 +12,8 @@ public:
 	NeuralNetworkDemo(Core& core);
 	void Update() override;
 	void Render() override;
-	void DrawNeuralNetwork(const NeuralNetwork& nn, Vec2i topLeft, int width, int height);
-	Vec2i GetNeuronDrawPosition(Vec2i topLeft, int rectWidth, int rectHeight, const NeuralNetwork& nn, int layerIndex, int neuronIndex);
+	//void DrawNeuralNetwork(const NeuralNetwork& nn, Vec2i topLeft, int width, int height);
+	//Vec2i GetNeuronDrawPosition(Vec2i topLeft, int rectWidth, int rectHeight, const NeuralNetwork& nn, int layerIndex, int neuronIndex);
 	void HandleKeyDown(Keys key) override;
 	void RunTests();
 	void Reset();
@@ -35,5 +36,7 @@ private:
 	std::vector<Matrix> trainingData;
 
 	Histogram histogram;
+
+	NeuralNetworkDrawer nnDrawer;
 };
 

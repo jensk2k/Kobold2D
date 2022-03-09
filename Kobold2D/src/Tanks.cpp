@@ -4,6 +4,7 @@
 
 Tanks::Tanks(Core& core)
 	: GameState(core)
+	, viewport(*this, 12.7f)
 {
 	// generate tank data
 	for (int i = 0; i < tanks.size(); i++)
@@ -67,9 +68,9 @@ void Tanks::Update()
 			angle = -1.f;
 		if (right)
 			angle = 1.f;
-		if (forward)
+		if (up)
 			tank.speed = 10.f;
-		else if (backward)
+		else if (down)
 			tank.speed = -10.f;
 		else
 			tank.speed = 0.f;
@@ -92,7 +93,7 @@ void Tanks::Render()
 		const VectorGraphicsObject& vgo = vgos[i];
 		//const std::vector<Vector2>& vertices = vgo.vertices;
 
-		vgo.Draw(*this);
+		vgo.Draw(*this, viewport);
 
 		//float cosR = cos(vgo.rotation);
 		//float sinR = sin(vgo.rotation);
@@ -132,9 +133,9 @@ void Tanks::HandleKeyDown(Keys key)
 	vpc.HandleKeyDown(key);
 
 	if (key == Keys::W)
-		forward = true;
+		up = true;
 	if (key == Keys::S)
-		backward = true;
+		down = true;
 	if (key == Keys::A)
 		left = true;
 	if (key == Keys::D)
@@ -146,9 +147,9 @@ void Tanks::HandleKeyUp(Keys key)
 	vpc.HandleKeyUp(key);
 
 	if (key == Keys::W)
-		forward = false;
+		up = false;
 	if (key == Keys::S)
-		backward = false;
+		down = false;
 	if (key == Keys::A)
 		left = false;
 	if (key == Keys::D)

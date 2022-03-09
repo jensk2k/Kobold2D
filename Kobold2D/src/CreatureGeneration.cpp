@@ -5,6 +5,7 @@
 
 CreatureGeneration::CreatureGeneration(Core& core)
 	: GameState(core)
+	, viewport(*this, 12.7f)
 {
 	// Generate creatures
 	int nCreatures = 1;
@@ -79,7 +80,7 @@ void CreatureGeneration::Update()
 		Transform& transform = creature.transform;
 		Vec2f right = transform.Right();
 		Vec2f left = transform.Left();
-		Vec2f forward = transform.Forward();
+		Vec2f up = transform.Forward();
 
 		// Update animation clock
 		float animationSpeedScale = creature.velocity.Length() / creature.maxSpeed;
@@ -98,7 +99,7 @@ void CreatureGeneration::Update()
 			float animClockDirection = even ? -1.f : 1.f;
 			Vec2f animationTargetDirection = even ? right : left;
 
-			Vec2f root = transform.position + forward * leg.rootOffset.y + right * leg.rootOffset.x;
+			Vec2f root = transform.position + up * leg.rootOffset.y + right * leg.rootOffset.x;
 
 			float time = creature.animationClock * creature.animationClockScale + leg.animationClockOffset;
 
@@ -161,7 +162,7 @@ void CreatureGeneration::Update()
 
 		float deltaTime = GetDeltaTime();
 
-		float targetTurnAngle = Vec2f::AngleSigned(forward, steeringDirection);
+		float targetTurnAngle = Vec2f::AngleSigned(up, steeringDirection);
 
 		float maxTurnSpeed = MathUtils::Deg2Rad(270.f);
 
@@ -223,7 +224,7 @@ void CreatureGeneration::Render()
 	{
 		VectorGraphicsObject& vgo = vgos[i];
 
-		vgo.Draw(*this);
+		vgo.Draw(*this, viewport);
 	}
 
 	for (int i = 0; i < creatures.size(); ++i)
@@ -253,8 +254,6 @@ void CreatureGeneration::Render()
 
 				DrawCircle(viewport.WorldToScreenSpace(footPos), viewport.scale * .5f, Colors::WHITE);
 			}
-
-
 		}
 
 		std::ostringstream ss;
@@ -272,7 +271,6 @@ void CreatureGeneration::Render()
 
 	Vec2i mousePosition = GetMousePosition();
 	DrawRectangleSolid(Vec2i(mousePosition.x - 5, mousePosition.y - 5), 10, 10, Colors::RED);
-
 }
 
 void CreatureGeneration::HandleKeyDown(Keys key)

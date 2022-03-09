@@ -5,6 +5,7 @@
 namespace MathUtils
 {
     float Clamp(float f, float min, float max);
+    //int Clamp(int f, int min, int max);
     float Max(float a, float b);
     float Min(float a, float b);
     float Abs(float f);

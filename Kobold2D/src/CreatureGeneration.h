@@ -47,6 +47,7 @@ public:
 	void HandleKeyDown(Keys key) override;
 	void HandleKeyUp(Keys key) override;
 private:
+	Viewport viewport;
 	ViewPortControl vpc;
 
 	std::vector<VectorGraphicsObject> vgos;

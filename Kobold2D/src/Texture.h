@@ -17,8 +17,9 @@ struct Texture
 
 	~Texture()
 	{
-		if (m_sdlTexture)
-			SDL_DestroyTexture(m_sdlTexture);
+		//if (m_sdlTexture)
+		//SDL_DestroyTexture(m_sdlTexture);
+		m_sdlTexture = nullptr;
 	}
 
 	SDL_Texture& GetSDLTexture() const
@@ -28,7 +29,8 @@ struct Texture
 
 	void WriteSDLTexture(SDL_Texture& sdlTexture)
 	{
-		SDL_DestroyTexture(m_sdlTexture);
+		if (m_sdlTexture)
+			SDL_DestroyTexture(m_sdlTexture);
 		m_sdlTexture = &sdlTexture;
 	}
 
