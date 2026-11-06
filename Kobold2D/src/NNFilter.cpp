@@ -9,36 +9,36 @@
 NNFilter::NNFilter(Core& core)
 	: GameState(core)
 	, inputMap(res, res)
-	, nn(0.1f, { 2, 16, 16, 3 })
-	, nnDrawer(*this, nn)
+	, nn(0.1f, { 2, 32, 32, 32, 3 })
+	, nnDrawer(*this)
 {
 	paths =
 	{
-		"assets/albums/teststar.png",
-		"assets/albums/flagtest.png",
-		"assets/albums/beatles1.jpg",
-		"assets/albums/beatles2.jpg",
+		//"assets/albums/teststar.png",
+		//"assets/albums/flagtest.png",
+		//"assets/albums/beatles1.jpg",
+		//"assets/albums/beatles2.jpg",
 		"assets/albums/blink.jpg",
-		"assets/albums/bowie1.jpg",
-		"assets/albums/bowie2.jpg",
-		"assets/albums/bruce.jpg",
-		"assets/albums/clash.jpg",
-		"assets/albums/cream.jpg",
-		"assets/albums/darkside.png",
-		"assets/albums/dolly.jpg",
-		"assets/albums/elvis.jpg",
-		"assets/albums/grace.jpg",
-		"assets/albums/kate.jpg",
-		"assets/albums/mac.jpg",
-		"assets/albums/nirvana.jpg",
-		"assets/albums/nwa.jpg",
-		"assets/albums/pixies.jpg",
-		"assets/albums/pj.jpg",
-		"assets/albums/prince.jpg",
-		"assets/albums/pumpkins.jpg",
-		"assets/albums/strokes.jpg",
-		"assets/albums/tribe.jpg",
-		"assets/albums/velvet.jpg"
+		//"assets/albums/bowie1.jpg",
+		//"assets/albums/bowie2.jpg",
+		//"assets/albums/bruce.jpg",
+		//"assets/albums/clash.jpg",
+		//"assets/albums/cream.jpg",
+		//"assets/albums/darkside.png",
+		//"assets/albums/dolly.jpg",
+		//"assets/albums/elvis.jpg",
+		//"assets/albums/grace.jpg",
+		//"assets/albums/kate.jpg",
+		//"assets/albums/mac.jpg",
+		//"assets/albums/nirvana.jpg",
+		//"assets/albums/nwa.jpg",
+		//"assets/albums/pixies.jpg",
+		//"assets/albums/pj.jpg",
+		//"assets/albums/prince.jpg",
+		//"assets/albums/pumpkins.jpg",
+		//"assets/albums/strokes.jpg",
+		//"assets/albums/tribe.jpg",
+		//"assets/albums/velvet.jpg"
 	};
 }
 
@@ -166,7 +166,7 @@ void NNFilter::Render()
 	int bottomYSpace = GetWindowHeight() - imageDim - margin * 2;
 	{
 		Vec2i pos(margin + 280, imageDim + margin*2);
-		nnDrawer.DrawNeuralNetwork(nullptr, pos, 1000, bottomYSpace, false, 5);
+		nnDrawer.DrawNeuralNetwork(nn, nullptr, pos, 1000, bottomYSpace, false, 5);
 	}
 	{
 		Vec2i pos(margin*2 + 280 + 1000, imageDim + margin * 2);
@@ -300,6 +300,35 @@ float NNFilter::RunQuickTests() const
 	return correctness / (float)trainingDataSize;
 }
 
+//float NNFilter::CalculateFitness() const
+//{
+//	float correctness = 0.f;
+//	for (int y = 0; y < inputMap.m_height; y++)
+//	{
+//		for (int x = 0; x < inputMap.m_width; x++)
+//		{
+//
+//			Matrix testInput(1, 2, {x / (float)inputMap.m_width, y / (float)inputMap.m_height });
+//			Matrix target = GetTarget(testInput);
+//			Matrix output = nn.Solve(testInput);
+//			
+//			float localCorrectness = 1.f;
+//
+//			for (int i = 0; i < output.Rows(); i++)
+//			{
+//				float error = MathUtils::Abs(target(0, i) - output(0, i));
+//
+//				localCorrectness *= 1.f - error;
+//			}
+//			correctness += localCorrectness;
+//		}
+//	}
+//
+//	int trainingDataSize = inputMap.m_height * inputMap.m_width;
+//
+//	return correctness / trainingDataSize;
+//}
+
 float NNFilter::CalculateFitness() const
 {
 	float correctness = 0.f;
@@ -308,10 +337,10 @@ float NNFilter::CalculateFitness() const
 		for (int x = 0; x < inputMap.m_width; x++)
 		{
 
-			Matrix testInput(1, 2, {x / (float)inputMap.m_width, y / (float)inputMap.m_height });
+			Matrix testInput(1, 2, { x / (float)inputMap.m_width, y / (float)inputMap.m_height });
 			Matrix target = GetTarget(testInput);
 			Matrix output = nn.Solve(testInput);
-			
+
 			float localCorrectness = 1.f;
 
 			for (int i = 0; i < output.Rows(); i++)
@@ -319,6 +348,7 @@ float NNFilter::CalculateFitness() const
 				float error = MathUtils::Abs(target(0, i) - output(0, i));
 
 				localCorrectness *= 1.f - error;
+				localCorrectness = localCorrectness * localCorrectness * localCorrectness * localCorrectness * localCorrectness * localCorrectness;
 			}
 			correctness += localCorrectness;
 		}

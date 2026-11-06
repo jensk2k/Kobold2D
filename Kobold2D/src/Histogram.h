@@ -11,6 +11,8 @@ public:
 	void RecordSample(float sample);
 	void Draw(GameState& gameState, Vec2i position, int histogramSize, const std::string* title, bool writeHighestLatest = true, float highestOverride = -1.f) const;
 	void Reset();
+
+	int cap = 0;
 private:
 	std::vector<float> histogram;
 };

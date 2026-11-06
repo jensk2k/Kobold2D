@@ -3,7 +3,7 @@ class Timer
 {
 public:
 	Timer(float reset) : reset(reset) {};
-	Timer() : reset(1.f) {};
+	Timer() : reset(0.f) {};
 	bool Update(float deltaTime) 
 	{
 		bool ret = false;

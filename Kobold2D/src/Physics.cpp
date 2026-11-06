@@ -84,16 +84,22 @@ Physics::Circle* Physics::World::GetCircleByID(unsigned id)
 unsigned Physics::World::AddBox(Layer layer, Vec2f position, float width, float height)
 {
 	boxes.push_back(Physics::Box(position, width, height));
-	unsigned id = boxes[boxes.size() - 1].objectID;
+	Box& box = boxes[boxes.size() - 1];
+	unsigned id = box.objectID;
 	infoMap[id] = Info(layer, Shape::Box);
+	box.info = &infoMap[id];
+
 	return id;
 }
 
 unsigned Physics::World::AddCircle(Layer layer, Vec2f position, float radius)
 {
 	circles.push_back(Physics::Circle(position, radius));
-	unsigned id = circles[circles.size() - 1].objectID;
+	Circle circle = circles[circles.size() - 1];
+	unsigned id = circle.objectID;
 	infoMap[id] = Info(layer, Shape::Circle);
+	circle.info = &infoMap[id];
+
 	return id;
 }
 
@@ -200,6 +206,15 @@ void Physics::World::CheckCollisions()
 			if (box1.objectID == box2.objectID)
 				continue;
 
+			if (!box1.info->enabled)
+				continue;
+
+			if (!box2.info->enabled)
+				continue;
+
+			if (box1.info->layer == box2.info->layer) //HACK
+				continue;
+
 			Physics::CollisionInfo colInfo;
 			if (CheckCollision(box1, box2, colInfo))
 			{
@@ -209,13 +224,18 @@ void Physics::World::CheckCollisions()
 			}
 		}
 	}
-
 	// Circle x Circle
 	for (const Circle& circle1 : circles)
 	{
 		for (const Circle& circle2 : circles)
 		{
 			if (circle1.objectID == circle2.objectID)
+				continue;
+
+			if (!circle1.info->enabled)
+				continue;
+
+			if (!circle1.info->enabled)
 				continue;
 
 			Physics::CollisionInfo colInfo;
@@ -233,6 +253,12 @@ void Physics::World::CheckCollisions()
 	{
 		for (const Box& box : boxes)
 		{
+			if (!circle.info->enabled)
+				continue;
+
+			if (!box.info->enabled)
+				continue;
+
 			Physics::CollisionInfo colInfo1;
 			Physics::CollisionInfo colInfo2;
 			if (CheckCollision(box, circle, colInfo1))
@@ -250,4 +276,11 @@ void Physics::World::CheckCollisions()
 			}
 		}
 	}
+}
+
+void Physics::World::Clear()
+{
+	boxes.clear();
+	circles.clear();
+	infoMap.clear();
 }

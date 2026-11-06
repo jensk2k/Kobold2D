@@ -4,19 +4,22 @@
 #include "PrecisionStopWatch.h"
 
 #include <sstream>
+#include <assert.h>
 
 static float CalculateFitness(Map2D<Color>& sourceMap, Map2D<Color>& targetMap)
 {
+	assert(sourceMap.m_width == targetMap.m_width);
+	assert(sourceMap.m_height == targetMap.m_height);
 	float correctness = 0.f;
 	for (int y = 0; y < targetMap.m_height; y++)
 	{
 		for (int x = 0; x < targetMap.m_width; x++)
 		{
-			int x2 = ((float)x / targetMap.m_width) * sourceMap.m_width;
-			int y2 = ((float)y / targetMap.m_height) * sourceMap.m_height;
+			//int x2 = ((float)x / targetMap.m_width) * sourceMap.m_width;
+			//int y2 = ((float)y / targetMap.m_height) * sourceMap.m_height;
 
 			Color target = targetMap(x, y);
-			Color source = sourceMap(x2, y2);
+			Color source = sourceMap(x, y);
 
 			float r = 1.f - (MathUtils::Abs(target.red - source.red) / 255);
 			float g = 1.f - (MathUtils::Abs(target.green - source.green) / 255);
@@ -121,7 +124,7 @@ static int GetWeightedRandom(std::vector<float>& numbers)
 	return -1;
 }
 
-static void CrossOver(const Gene& specimen1, const Gene& specimen2, Gene& child)
+static void CrossOverSlice(const Gene& specimen1, const Gene& specimen2, Gene& child)
 {
 	child.colors.resize(specimen1.colors.size());
 	child.blobs.resize(specimen1.blobs.size());
@@ -155,6 +158,23 @@ static void CrossOver(const Gene& specimen1, const Gene& specimen2, Gene& child)
 	}
 }
 
+
+static void CrossOverRandom(const Gene& specimen1, const Gene& specimen2, Gene& child)
+{
+	child.colors.resize(specimen1.colors.size());
+	child.blobs.resize(specimen1.blobs.size());
+
+	for (int i = 0; i < specimen1.colors.size(); i++)
+	{
+		child.colors[i] = Random::Range(0.f, 1.f) < 0.5f ? specimen1.colors[i] : specimen2.colors[i];
+	}
+
+	for (int i = 0; i < specimen1.blobs.size(); i++)
+	{
+		child.blobs[i] = Random::Range(0.f, 1.f) < 0.5f ? specimen1.blobs[i] : specimen2.blobs[i];
+	}
+}
+
 static void Mutate(Gene& child)
 {
 	int range = child.colors.size() + child.blobs.size() - 1;
@@ -165,7 +185,7 @@ static void Mutate(Gene& child)
 		int colorMutationIndex = rand;
 		//child.colors[colorMutationIndex] = Color(Random::Range(0, 255), Random::Range(0, 255), Random::Range(0, 255));
 		Color curColor = child.colors[colorMutationIndex];
-		child.colors[colorMutationIndex] = Color(curColor.red + Random::Range(-4,4), curColor.green + Random::Range(-4, 4), curColor.blue + Random::Range(-4, 4));
+		child.colors[colorMutationIndex] = Color(curColor.red + Random::Range(-32,32), curColor.green + Random::Range(-32, 32), curColor.blue + Random::Range(-32, 32));
 	}
 	else
 	{
@@ -239,7 +259,7 @@ void GAMetaBalls::Render()
 {
 	int dim = GetWindowWidth() / 3;
 
-	DrawTexture(inputTex, Vec2i(0, 0), dim, dim);
+	DrawTexture(inputTexDownscaled, Vec2i(0, 0), dim, dim);
 	DrawTexture(outputTex, Vec2i(dim, 0), dim, dim);
 	DrawTexture(bestTex, Vec2i(dim*2, 0), dim, dim);
 
@@ -250,15 +270,20 @@ void GAMetaBalls::Render()
 		ss << "\nMutation Rate: " << MUTATION_RATE * 100 << "%";
 		ss << "\nAverage Fitness: " << averageFitness * 100 << "%";
 		ss << "\nHighest Fitness: " << highestFitness * 100 << "%";
+		ss << "\nRes: " << inputMap.m_width << "x" << inputMap.m_height;
 
 		Vec2i textPos(5, dim + 5);
 
 		DrawText(ss.str(), textPos.x, textPos.y);
 	}
+	int size = GetWindowHeight() - dim - 10;
 	{
 		Vec2i pos(300, dim + 5);
-		int size = GetWindowHeight() - dim - 10;
 		histogram.Draw(*this, pos, size, nullptr, false, 1.f);
+	}
+	{
+		Vec2i pos(300 + size + 5, dim + 5);
+		DrawTexture(inputTex, pos, size, size);
 	}
 }
 
@@ -303,13 +328,13 @@ void GAMetaBalls::InitializePopulation()
 	for (int i = 0; i < population.size(); i++)
 	{
 		Gene& g = population[i];
-		GenerateRandomBlobs(10, g.blobs);
-		GenerateRandomColors(4, g.colors);
+		GenerateRandomBlobs(NUMBER_OF_BLOBS, g.blobs);
+		GenerateRandomColors(NUMBER_OF_COLORS, g.colors);
 	}
 
 	RecalculateFitness();
 
-	RenderBlobs(population[bestSpecimen].blobs, population[bestSpecimen].colors, outputMap, inputMap.m_width);
+	RenderBlobs(population[bestSpecimen].blobs, population[bestSpecimen].colors, outputMap, inputMapDownscaled.m_width);
 
 	RenderPixelMapToTexture(outputMap, outputTex);
 	sw.Stop();
@@ -341,7 +366,7 @@ void GAMetaBalls::Iterate()
 			continue;
 		//	Crossover
 		Gene& child = newPopulation[count];
-		CrossOver(population[parent1], population[parent2], child);
+		CrossOverRandom(population[parent1], population[parent2], child);
 
 		//	Mutation
 		if (Random::Range(0.f, 1.f) < MUTATION_RATE)
@@ -365,7 +390,7 @@ void GAMetaBalls::Iterate()
 
 
 	//sw2.Start();
-	RenderBlobs(population[bestSpecimen].blobs, population[bestSpecimen].colors, outputMap, inputMap.m_width);
+	RenderBlobs(population[bestSpecimen].blobs, population[bestSpecimen].colors, outputMap, inputMapDownscaled.m_width);
 	//sw2.Stop();
 	//std::cout << "Rendering best took " << sw2.GetMilli() << " ms" << std::endl;
 
@@ -378,6 +403,8 @@ void GAMetaBalls::Iterate()
 	{
 		allTimeBest = highestFitness;
 		bestMap = outputMap;
+		//RenderBlobs(population[bestSpecimen].blobs, population[bestSpecimen].colors, bestMap, inputMap.m_width);
+
 		RenderPixelMapToTexture(bestMap, bestTex);
 	}
 
@@ -387,17 +414,25 @@ void GAMetaBalls::Iterate()
 
 void GAMetaBalls::RecalculateFitness()
 {
-	PrecisionStopWatch sw;
+	//PrecisionStopWatch sw;
 	fitnesses.resize(population.size());
+
+	//long long renderTime = 0;
+	//long long fitnessCalcTime = 0;
 
 	Map2D<Color> map;
 	for (int i = 0; i < population.size(); i++)
 	{
 		Gene& g = population[i];
-
-		RenderBlobs(g.blobs, g.colors, map, inputMap.m_width);
-
-		fitnesses[i] = CalculateFitness(inputMap, map);
+		//PrecisionStopWatch renderPSW;
+		RenderBlobs(g.blobs, g.colors, map, inputMapDownscaled.m_width);
+		//renderPSW.Stop();
+		//renderTime += renderPSW.GetMilli();
+		
+		//PrecisionStopWatch fitnessCalcPSW;
+		fitnesses[i] = CalculateFitness(inputMapDownscaled, map);
+		//fitnessCalcPSW.Stop();
+		//fitnessCalcTime += fitnessCalcPSW.GetMilli();
  		//fitnesses[i] = CalculateFitnessFast(inputMap, map, 100);
 	}
 
@@ -416,8 +451,9 @@ void GAMetaBalls::RecalculateFitness()
 	averageFitness = totalFitness / fitnesses.size();
 
 	histogram.RecordSample(highestFitness);
-	sw.Stop();
-	std::cout << "Recalculating fitness took " << sw.GetMilli() << " ms" << std::endl;
+	//sw.Stop();
+	//std::cout << "Recalculating fitness took " << sw.GetMilli() << " ms" << std::endl;
+	//std::cout << "Recalculating fitness\nRender: " << renderTime << "\nFitnessCalc: " << fitnessCalcTime << std::endl;
 }
 
 void GAMetaBalls::Reset()
@@ -452,10 +488,12 @@ void GAMetaBalls::RenderBlobs(const std::vector<NNBlob> blobs, const std::vector
 				float radius = blob.radius;
 
 				Vec2f coord((float)x / colorMap.m_width, (float)y / colorMap.m_height);
+
+				//float distance2 = (coord - blob.pos).Length2();
+				//float val = distance2 > 0.f ? (radius*radius) / distance2 : 1.f;
+
 				float distance = (coord - blob.pos).Length();
-
 				float val = distance > 0.f ? radius / distance : 1.f;
-
 				val = val * val;
 
 				sum += val;
@@ -480,7 +518,6 @@ void GAMetaBalls::RenderBlobs(const std::vector<NNBlob> blobs, const std::vector
 			colorMap(x, y) = c;
 		}
 	}
-
 }
 
 void GAMetaBalls::LoadInputImage(int index)
@@ -488,4 +525,19 @@ void GAMetaBalls::LoadInputImage(int index)
 	LoadImageMap(paths[index].c_str(), inputMap);
 
 	LoadTexture(paths[index].c_str(), inputTex, inputMap.m_width, inputMap.m_height);
+
+	inputMapDownscaled = Map2D<Color>(32, 32);
+
+	for (int y = 0; y < inputMapDownscaled.m_height; y++)
+	{
+		for (int x = 0; x < inputMapDownscaled.m_width; x++)
+		{
+			int x2 = ((float)x / inputMapDownscaled.m_width) * inputMap.m_width;
+			int y2 = ((float)y / inputMapDownscaled.m_height) * inputMap.m_height;
+
+			inputMapDownscaled(x, y) = inputMap(x2, y2);
+		}
+	}
+
+	RenderPixelMapToTexture(inputMapDownscaled, inputTexDownscaled);
 }

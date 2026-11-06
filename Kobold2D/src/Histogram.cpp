@@ -4,7 +4,17 @@
 
 void Histogram::RecordSample(float sample)
 {
-	histogram.push_back(sample);
+	if (cap < 1 || histogram.size() < cap)
+	{
+		histogram.push_back(sample);
+		return;
+	}
+
+	for (int i = 0; i < histogram.size() - 1; i++)
+	{
+		histogram[i] = histogram[i + 1];
+	}
+	histogram[histogram.size() - 1] = sample;
 }
 
 void Histogram::Draw(GameState& gameState, Vec2i position, int histogramSize, const std::string* title, bool writeHighestLatest, float highestOverride) const
@@ -52,8 +62,17 @@ void Histogram::Draw(GameState& gameState, Vec2i position, int histogramSize, co
 
 		if (writeHighestLatest)
 		{
+			float latestSample = histogram[histogram.size() - 1];
+
 			std::ostringstream ss;
-			ss << ((int)(100.f * highestSampleValue)) / 100.f << " " << ((int)(100.f * histogram[histogram.size() - 1])) / 100.f;
+			if (highestSampleValue > 10.f || latestSample > 10.f)
+			{
+				ss << (int)highestSampleValue << " " << (int)latestSample;
+			}
+			else
+			{
+				ss << ((int)(100.f * highestSampleValue)) / 100.f << " " << ((int)(100.f * histogram[histogram.size() - 1])) / 100.f;
+			}
 			Vec2i textPos = position + Vec2i(0, histogramSize - 30);
 
 			gameState.DrawText(ss.str(), textPos.x, textPos.y);

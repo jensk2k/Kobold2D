@@ -18,7 +18,7 @@ void Squares::Render()
 	int nY = 36;
 
 	Color color = Color(192, 192, 192, 255);
-	float timeScale = 0.004f;
+	float timescale = 0.004f;
 	float squareSize = 12.f;
 	float spacing = 20.f;
 	float xTimeoffset = 0.08f;
@@ -28,8 +28,8 @@ void Squares::Render()
 	{
 		for (int x = 0; x < nX; x++)
 		{
-			float scaleX = (sin(time * timeScale + x * xTimeoffset) + 2.f) / 3.f;
-			float scaleY = (sin(time * timeScale + y * yTimeoffset) + 2.f) / 3.f;
+			float scaleX = (sin(time * timescale + x * xTimeoffset) + 2.f) / 3.f;
+			float scaleY = (sin(time * timescale + y * yTimeoffset) + 2.f) / 3.f;
 
 			Vec2i pos;
 			pos.x = static_cast<int>(spacing * 0.5f + x * spacing - squareSize * 0.5f * scaleX);

@@ -113,6 +113,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\SDL2\include;$(SolutionDir)Dependencies\SDL2_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,6 +147,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\SDL2\include;$(SolutionDir)Dependencies\SDL2_image\include;C:\Users\Jens-Kristian\source\repos\Kobold2D\Dependencies\SDL_ttf\include;$(SolutionDir)Dependencies\SDL_ttf\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -157,6 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\FlappyBot.cpp" />
     <ClCompile Include="src\PhysicsDemo.cpp" />
     <ClCompile Include="src\Physics.cpp" />
     <ClCompile Include="src\CTF.cpp" />
@@ -195,6 +198,7 @@
     <ClCompile Include="src\TrailMap.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\FlappyBot.h" />
     <ClInclude Include="src\PhysicsDemo.h" />
     <ClInclude Include="src\Physics.h" />
     <ClInclude Include="src\CTF.h" />

@@ -69,9 +69,9 @@ void Cells::Update()
 					{
 						float foodEnergy = 0.f;
 						if (food(x, y).state == FoodState::Plant)
-							foodEnergy = (1.f - cell.genes.diet) * 1.f;
+							foodEnergy = (1.f - cell.genes.diet);
 						else if (food(x, y).state == FoodState::Meat)
-							foodEnergy = cell.genes.diet * 10.f;
+							foodEnergy = cell.genes.diet;
 
 						cell.energy = MathUtils::Clamp(cell.energy + foodEnergy, 0.f, cell.MaxEnergy());
 						food(x, y).state = FoodState::Growing;
@@ -87,24 +87,74 @@ void Cells::Update()
 		for (int i = cells.size() - 1; i >= 0; i--)
 		{
 			Cell& cell = cells[i];
-			float sizeCost = cell.Size() * 0.1f;
-			float movementCost = cell.velocity.Length() * 0.01f * cell.Size();
-			//float foodDetectionCost = cell.genes.foodDetectionRange * 0.002f;
 
-			cell.energy -= (0.1f + sizeCost + movementCost);
+			cell.energy -= cell.GetMetabolism();
+		}
+	}
 
-			bool kill = cell.energy <= 0.f || cell.age > cell.genes.lifespan;
+	// kill
+	for (int i = cells.size() - 1; i >= 0; i--)
+	{
+		Cell& cell = cells[i];
 
-			// Death
-			if (kill)
+		bool murdered = cell.health <= 0.f;
+		bool starved = cell.energy <= 0.f;
+		bool aged = cell.age > cell.genes.lifespan;
+		
+		if (murdered)
+			deathsByMurder++;
+		else if (starved)
+			deathsByStarvaion++;
+		else if (aged)
+			deathsByAge++;
+
+		bool kill = murdered || starved || aged;
+
+		if (kill)
+		{
+			// spread meat
+			int meatToSpawn = MathUtils::Max(0.f, std::floor(cell.energy));
+
+			for (int j = 0; j < meatToSpawn; j++)
 			{
+				int randRange = std::ceil(std::sqrt((float)meatToSpawn));
+				int randX = Random::Range(-randRange, randRange) * Random::Range(-randRange, randRange);
+				int randY = Random::Range(-randRange, randRange) * Random::Range(-randRange, randRange);
+
+				Vec2i randomOffset(randX, randY);
 				Vec2i foodCoord = WorldToFoodCoord(cell.position);
+				foodCoord += randomOffset;
+
+				foodCoord.x = MathUtils::Clamp(foodCoord.x, 0, food.m_width - 1);
+				foodCoord.y = MathUtils::Clamp(foodCoord.y, 0, food.m_height - 1);
+
 				food(foodCoord.x, foodCoord.y).state = FoodState::Meat;
 				food(foodCoord.x, foodCoord.y).growthTimer.timer = 0.f;
-				//std::cout << "DEATH" << std::endl;
-				cells.erase(cells.begin() + i);
+			}
+			//std::cout << "DEATH" << std::endl;
+			// 
+			// remove cell from existence
+			cells.erase(cells.begin() + i);
+		}
+	}
+
+	// health regen
+	for (int i = 0; i < cells.size(); i++)
+	{
+		Cell& cell = cells[i];
+
+		// regen health
+		if (cell.healthRegenTimer.Update(GetDeltaTime()))
+		{
+			if (cell.health < cell.MaxHealth())
+			{
+				float healthDelta = GetDeltaTime() * cell.MaxHealth();
+				cell.health += healthDelta;
 			}
 		}
+
+		if (cell.health > cell.MaxHealth())
+			cell.health = cell.MaxHealth();
 	}
 
 	// Extinction
@@ -119,9 +169,12 @@ void Cells::Update()
 		Cell& cell = cells[i];
 
 		cell.age += GetDeltaTime();
-
-		int nearestOtherCellIndex = -1;
+		int closestPreyCellIndex = -1;
 		{
+			cell.nearestPrey = NearestFood();
+			cell.hunterPosition = Vec2f();
+			cell.hunterExists = false;
+
 			float distance2 = Vec2f(GetWindowWidth(), GetWindowHeight()).Length2();
 
 			for (int j = 0; j < cells.size(); j++)
@@ -130,51 +183,144 @@ void Cells::Update()
 					continue;
 
 				Cell& otherCell = cells[j];
-				const Vec2f& otherCellPos = otherCell.position;
-				float distanceToOther2 = (cell.position - otherCellPos).Length2();
+				float distanceToOther2 = (cell.position - otherCell.position).Length2();
 
-				if (distanceToOther2 < distance2)
+				if (distanceToOther2 < MathUtils::Square(cell.genes.detectionRange))
 				{
-					distance2 = distanceToOther2;
-					nearestOtherCellIndex = j;
-				}
+					if (distanceToOther2 < distance2
+						&& cell.Size() > otherCell.Size() * cell.genes.predation)
+					{
+						distance2 = distanceToOther2;
+						closestPreyCellIndex = j;
+						cell.nearestPrey.exists = true;
+						cell.nearestPrey.position = otherCell.position;
+					}
+
+					if (otherCell.behavior == Behavior::Hunt)
+					{
+						cell.hunterExists = true;
+						cell.hunterPosition = otherCell.position;
+					}
+				}				
 			}
 		}
-		
-		cell.steeringDirection = Vec2f();
-		bool satiated = (cell.energy / cell.MaxEnergy()) >= 1.f;
-		if (!satiated)
+		 
+		// Behavior
+		float plantEnergy = cell.nearestPlant.exists ? (1.f - cell.genes.diet) * 1.f : 0.f;
+		float meatEnergy = cell.nearestMeat.exists ? cell.genes.diet * 1.f : 0.f;
+		float closestPreyEnergy = closestPreyCellIndex > -1 
+			? cells[closestPreyCellIndex].energy * cell.genes.diet 
+			: 0.f;
+
 		{
-			float plantEnergy = cell.nearestPlant.exists ? (1.f - cell.genes.diet) * 1.f : 0.f;
-			float meatEnergy = cell.nearestMeat.exists ? cell.genes.diet * 10.f : 0.f;
+			auto isSatiated = [](const Cell& cell) -> bool { return cell.energy / cell.MaxEnergy() >= 1.f; };
 
-			if (cell.nearestPlant.exists && plantEnergy > meatEnergy)
+			switch (cell.behavior)
 			{
-				Vec2f foodVector = cell.nearestPlant.position - cell.position;
-				if (foodVector.Length2() < MathUtils::Square(cell.genes.detectionRange)
-					&& foodVector.Length2() > MathUtils::Square(cell.Size()))
-				{
-					Vec2f foodDirection = foodVector.Normalized();
-					cell.steeringDirection = foodDirection;
-				}
-			}
-			if (cell.nearestMeat.exists && plantEnergy < meatEnergy)
+			case Behavior::Rest:
 			{
-				Vec2f foodVector = cell.nearestMeat.position - cell.position;
-				if (foodVector.Length2() < MathUtils::Square(cell.genes.detectionRange)
-					&& foodVector.Length2() > MathUtils::Square(cell.Size()))
+				if (cell.hunterExists)
 				{
-					Vec2f foodDirection = foodVector.Normalized();
-					cell.steeringDirection = foodDirection;
+					cell.behavior = Behavior::Flee;
 				}
+				else if ((cell.energy / cell.MaxEnergy()) < cell.genes.hungerThreshold) // hungry
+				{
+					if (plantEnergy > closestPreyEnergy || meatEnergy > closestPreyEnergy)
+						cell.behavior = Behavior::Feed;
+					else
+						cell.behavior = Behavior::Hunt;
+				}
+					
+				break;
 			}
-
+			case Behavior::Feed:
+			{
+				if (cell.hunterExists)
+				{
+					cell.behavior = Behavior::Flee;
+				}
+				else if (isSatiated(cell))
+					cell.behavior = Behavior::Rest;
+				break;
+			}
+			case Behavior::Hunt:
+			{
+				if (plantEnergy > closestPreyEnergy || meatEnergy > closestPreyEnergy)
+					cell.behavior = Behavior::Feed;
+				break;
+			}
+			case Behavior::Flee:
+			{
+				if (!cell.hunterExists)
+				{
+					cell.behavior = Behavior::Rest;
+				}
+				break;
+			}
+			default:
+				break;
+			}
 		}
 
-		bool shouldBreak = cell.steeringDirection.IsZero();
+		bool isAttackCoolingDown = cell.attackCooldownTimer.Update(GetDeltaTime());
 
-		CalcSteering(cell.steeringDirection, shouldBreak, cell.genes.maxSpeed, 10.f, 20.f, cell.position, cell.velocity);
+		// Steer
+		{
+			cell.steeringDirection = Vec2f();
+			Vec2f moveVector;
 
+			if (cell.behavior == Behavior::Flee)
+			{
+				moveVector = cell.position - cell.hunterPosition;
+			}
+			else if (cell.behavior == Behavior::Hunt)
+			{
+				if (cell.nearestPrey.exists && !isAttackCoolingDown)
+				{
+					moveVector = cell.nearestPrey.position - cell.position;
+				}
+			}
+			else if (cell.behavior == Behavior::Feed)
+			{
+				if (cell.nearestMeat.exists && meatEnergy > plantEnergy)
+				{
+					moveVector = cell.nearestMeat.position - cell.position;
+				}
+				else if(cell.nearestPlant.exists)
+				{
+					moveVector = cell.nearestPlant.position - cell.position;
+				}
+			}
+
+			if (moveVector.Length2() < MathUtils::Square(cell.genes.detectionRange)
+				&& moveVector.Length2() > MathUtils::Square(cell.Size()))
+			{
+				Vec2f foodDirection = moveVector.Normalized();
+				cell.steeringDirection = foodDirection;
+			}
+
+			bool shouldBreak = cell.steeringDirection.IsZero();
+
+			CalcSteering(cell.steeringDirection, shouldBreak, cell.genes.maxSpeed, 10.f, 20.f, cell.position, cell.velocity);
+		}
+
+		// Attack
+		{
+			if (!isAttackCoolingDown && cell.behavior == Behavior::Hunt && cell.nearestPrey.exists)
+			{
+				Cell& prey = cells[closestPreyCellIndex];
+				float preyDistance = (prey.position - cell.position).Length();
+				float radiusSum = cell.Size() + prey.Size();
+				
+				if (preyDistance < radiusSum * 1.1f)
+				{
+					float damage = cell.Size() * 10.f;
+					prey.health -= damage;
+					prey.healthRegenTimer.reset = 5.f;
+					cell.attackCooldownTimer.reset = cell.Size();
+				}
+			}
+		}
 		// Propagation
 		if (cell.age > cell.genes.matureAge
 			&& cell.propagationTimer.Update(GetDeltaTime())
@@ -183,8 +329,24 @@ void Cells::Update()
 			Genes parentGenesCopy = cell.genes;
 			Vec2f parentPosition = cell.position;
 
-			cell.energy -= cell.genes.startSize*10.f;
-			PropagateCell(parentPosition, &parentGenesCopy, false);
+			int childrenToSpawn = std::round(parentGenesCopy.spawnOnPropagation);
+
+			for (int j = 0; j < childrenToSpawn; j++)
+			{
+				cell.energy -= cell.genes.startSize * 10.f;
+				cell.attackCooldownTimer.reset = 5.f; // should be gene
+				int childIndex = -1;
+				float newCellEnergy = PropagateCell(parentPosition, &parentGenesCopy, false, childIndex);
+
+				cell.energy -= newCellEnergy;
+
+				if (cell.energy < 0.f)
+				{
+					Cell& child = cells[childIndex];
+					child.energy += cell.energy;
+					break;
+				}
+			}
 		}
 
 
@@ -237,6 +399,9 @@ void Cells::Update()
 			averageGenes.lifespan += genes.lifespan;
 			averageGenes.matureAge += genes.matureAge;
 			averageGenes.diet += genes.diet;
+			averageGenes.predation += genes.predation;
+			averageGenes.hungerThreshold += genes.hungerThreshold;
+			averageGenes.spawnOnPropagation += genes.spawnOnPropagation;
 		}
 
 		averageGenes.matureSize /= cells.size();
@@ -249,42 +414,47 @@ void Cells::Update()
 		averageGenes.lifespan /= cells.size();
 		averageGenes.matureAge /= cells.size();
 		averageGenes.diet /= cells.size();
+		averageGenes.predation /= cells.size();
+		averageGenes.hungerThreshold /= cells.size();
+		averageGenes.spawnOnPropagation /= cells.size();
 
 		histograms["population"].RecordSample((float)cells.size());
-		histograms["mature size"].RecordSample(averageGenes.matureSize);
-		histograms["start size"].RecordSample(averageGenes.startSize);
-		histograms["max speed"].RecordSample(averageGenes.maxSpeed);
+		histograms["size mtr"].RecordSample(averageGenes.matureSize);
+		histograms["size start"].RecordSample(averageGenes.startSize);
+		histograms["speed max"].RecordSample(averageGenes.maxSpeed);
 		histograms["detection"].RecordSample(averageGenes.detectionRange);
-		histograms["prop int"].RecordSample(averageGenes.propagationInterval);
-		histograms["prop min e"].RecordSample(averageGenes.propagationMinEnergy);
+		histograms["prg intv"].RecordSample(averageGenes.propagationInterval);
+		histograms["prg min en"].RecordSample(averageGenes.propagationMinEnergy);
 		histograms["mut prob"].RecordSample(averageGenes.mutationProbability);
-		histograms["lifespan"].RecordSample(averageGenes.lifespan);
-		histograms["mature age"].RecordSample(averageGenes.matureAge);
+		histograms["age max"].RecordSample(averageGenes.lifespan);
+		histograms["age mtr"].RecordSample(averageGenes.matureAge);
 		histograms["diet"].RecordSample(averageGenes.diet);
-
+		histograms["predation"].RecordSample(averageGenes.predation);
+		histograms["hngr thrsh"].RecordSample(averageGenes.hungerThreshold);
+		histograms["prg spwn"].RecordSample(averageGenes.spawnOnPropagation);
 	}
 	histogramSampleTimer -= GetDeltaTime();
 
 	simTime += GetDeltaTime();
-
 }
 
-#define TRAILS 1
 void Cells::Render()
 {
-#if TRAILS
-	trailMap.Update(1.f);
 
-	for (int i = 0; i < cells.size(); i++)
+	if (!debugMode)
 	{
-		const Cell& cell = cells[i];
-		int sizeSS = cell.Size() * viewport.scale; 
-		Vec2i cellPosSS = viewport.WorldToScreenSpace(cell.position);
-		trailMap.Trail(cellPosSS, sizeSS, cell.genes.color);
-		
+		trailMap.Update(1.f);
+
+		for (int i = 0; i < cells.size(); i++)
+		{
+			const Cell& cell = cells[i];
+			int sizeSS = cell.Size() * viewport.scale;
+			Vec2i cellPosSS = viewport.WorldToScreenSpace(cell.position);
+			trailMap.Trail(cellPosSS, sizeSS, cell.genes.color);
+
+		}
+		trailMap.Render();
 	}
-	trailMap.Render();
-#endif
 
 	for (int y = 0; y < food.m_height; y++)
 	{
@@ -304,47 +474,71 @@ void Cells::Render()
 		}
 	}
 
+	if (debugMode)
 	{
-		std::ostringstream os;
-		os << "Simulation Time: " << (int)simTime;
-		DrawText(os.str(), 0, 24);
+		{
+			std::ostringstream os;
+			os << "Simulation Time: " << (int)simTime;
+			DrawText(os.str(), 0, 24);
+		}
+
+		{
+			int highestGen = GetLastestGen();
+			std::ostringstream os;
+			os << "Generation: " << highestGen;
+			DrawText(os.str(), 0, 48);
+		}
+
+		{
+			int highestGen = GetLastestGen();
+			std::ostringstream os;
+			os << "Deaths";
+			os << "\n  Starvation: " << deathsByStarvaion;
+			os << "\n  Age: " << deathsByAge;
+			os << "\n  Murder: " << deathsByMurder;
+			DrawText(os.str(), 0, 72);
+		}
+		//{
+		//	std::ostringstream os;
+		//	os << "Food: " << food.size();
+		//	DrawText(os.str(), 0, 72);
+		//}
 	}
 
+	if (debugMode)
 	{
-		int highestGen = GetLastestGen();
-		std::ostringstream os;
-		os << "Generation: " << highestGen;
-		DrawText(os.str(), 0, 48);
-	} 
+		for (int i = 0; i < cells.size(); i++)
+		{
+			const Cell& cell = cells[i];
+			int sizeSS = cell.Size() * viewport.scale;
 
-	//{
-	//	std::ostringstream os;
-	//	os << "Food: " << food.size();
-	//	DrawText(os.str(), 0, 72);
-	//}
+			Vec2i cellPosSS = viewport.WorldToScreenSpace(cell.position);
 
-#if !TRAILS
-	for (int i = 0; i < cells.size(); i++)
-	{
-		const Cell& cell = cells[i];
-		int sizeSS = cell.Size() * viewport.scale;
+			//DrawCircle(Vec2i(cellPosSS.x, cellPosSS.y), sizeSS, Colors::WHITE);
+			DrawCircleSolid(Vec2i(cellPosSS.x, cellPosSS.y), sizeSS, cell.genes.color);
+			DrawCircle(Vec2i(cellPosSS.x, cellPosSS.y), sizeSS, Colors::WHITE);
 
-		Vec2i cellPosSS = viewport.WorldToScreenSpace(cell.position);
-		
-		//DrawCircle(Vec2i(cellPosSS.x, cellPosSS.y), sizeSS, Colors::WHITE);
-		DrawCircleSolid(Vec2i(cellPosSS.x, cellPosSS.y), sizeSS, cell.genes.color);
-		DrawCircle(Vec2i(cellPosSS.x, cellPosSS.y), sizeSS, Colors::WHITE);
+			float health = cell.health / cell.MaxHealth();
+			float energy = cell.energy / cell.MaxEnergy();
+			float age = 1.f - (cell.age / cell.genes.lifespan);
+			DrawBar(cellPosSS + Vec2i(-24, -24), health, Colors::RED);
+			DrawBar(cellPosSS + Vec2i(-24, -16), energy, Colors::CYAN);
+			DrawBar(cellPosSS + Vec2i(-24, -8), age, Colors::GREEN);
 
-		float energy = cell.energy / cell.MaxEnergy();
-		DrawRectangleSolid(cellPosSS + Vec2i(-8, -24), 16+2, 4+2, Colors::BLACK);
-		DrawRectangle(cellPosSS + Vec2i(-8, -24), 16 + 2, 4 + 2, Colors::WHITE);
-		DrawRectangleSolid(cellPosSS + Vec2i(-7, -23), 16 * energy, 4, Colors::RED);
+			//DrawCircle(cellPosSS, cell.genes.detectionRange * viewport.scale, Colors::WHITE);
 
-		//DrawCircle(cellPosSS, cell.genes.foodDetectionRange * viewport.scale, Colors::WHITE);
-		//DrawCircle(cellPosSS, cell.genes.repulsionRange * viewport.scale, Colors::RED);
-		DrawArrowWS(cell.position, cell.steeringDirection, 1.f, Colors::WHITE);
+			Color arrowColor = cell.behavior == Behavior::Hunt ? Colors::RED : Colors::WHITE;
+			Vec2f arrowOffset = cell.steeringDirection * cell.Size();
+			viewport.DrawArrow(arrowOffset + cell.position, arrowOffset + cell.steeringDirection, 1.f, arrowColor);
+
+			// debug metabolism
+			{
+				std::ostringstream os;
+				os << ((int)(cell.GetMetabolism() * 100.f)) / 100.f;
+				DrawText(os.str(), cellPosSS.x, cellPosSS.y);
+			}
+		}
 	}
-#endif
 
 	//for (int i = 0; i < food.size(); i++)
 	//{
@@ -356,24 +550,27 @@ void Cells::Render()
 	//	DrawRectangleSolid(Vec2i(foodPosSS.x - size / 2, foodPosSS.y - size / 2), size, size, Colors::WHITE);
 	//}
 
-	int edgeOffset = 10;
-	int histogramSize = 115;
-
-	int i = 0;
-	for (auto const& x : histograms)
+	if (debugMode)
 	{
-		Vec2i histPos(edgeOffset + (histogramSize + edgeOffset) * i, GetWindowHeight() - edgeOffset - histogramSize);
-		
-		const std::string& title = x.first;
-		const Histogram& hist = x.second;
+		int edgeOffset = 10;
+		int histogramSize = 115;
 
-		hist.Draw(*this, histPos, histogramSize, &title);
+		int i = 0;
+		for (auto const& x : histograms)
+		{
+			Vec2i histPos(edgeOffset + (histogramSize + edgeOffset) * i, GetWindowHeight() - edgeOffset - histogramSize);
 
-		i++;
+			const std::string& title = x.first;
+			const Histogram& hist = x.second;
+
+			hist.Draw(*this, histPos, histogramSize, &title);
+
+			i++;
+		}
 	}
 }
 
-void Cells::PropagateCell(Vec2f spawnPosition, const Genes* parentGenes, bool disableMutation)
+float Cells::PropagateCell(Vec2f spawnPosition, const Genes* parentGenes, bool disableMutation, int& childIndex)
 {
 	//std::cout << "PROPAGATION" << std::endl;
 	Vec2f pos;
@@ -405,7 +602,7 @@ void Cells::PropagateCell(Vec2f spawnPosition, const Genes* parentGenes, bool di
 			std::cout << " MUTATION" << std::endl;
 			std::cout << " color: " << parentGenes->color << " -> " << newGenes.color << std::endl;
 
-			int dice = Random::Range(0, 10);
+			int dice = Random::Range(0, 13);
 			switch (dice)
 			{
 			case 0: // size
@@ -430,7 +627,7 @@ void Cells::PropagateCell(Vec2f spawnPosition, const Genes* parentGenes, bool di
 			}
 			case 4: // propagation interval
 			{
-				newGenes.propagationInterval = MutateGene(parentGenes->propagationInterval, "propagationInterval", 0.1f);
+				newGenes.propagationInterval = MutateGene(parentGenes->propagationInterval, "propagationInterval", 1.f);
 				break;
 			}
 			case 5: // prop min energy
@@ -458,6 +655,21 @@ void Cells::PropagateCell(Vec2f spawnPosition, const Genes* parentGenes, bool di
 				newGenes.diet = MutateGene(parentGenes->diet, "diet", 0.f, 1.f);
 				break;
 			}
+			case 10:
+			{
+				newGenes.predation = MutateGene(parentGenes->predation, "predation", 0.f);
+				break;
+			}
+			case 11:
+			{
+				newGenes.hungerThreshold = MutateGene(parentGenes->hungerThreshold, "hunger", 0.f, 1.f);
+				break;
+			}
+			case 12:
+			{
+				newGenes.spawnOnPropagation = MutateGene(parentGenes->hungerThreshold, "spawnOnPropagation", 1.f);
+				break;
+			}
 			default:
 				std::cout << " UNMAPPED GENE" << std::endl;
 				break;
@@ -469,26 +681,40 @@ void Cells::PropagateCell(Vec2f spawnPosition, const Genes* parentGenes, bool di
 		newGenes.color.red = Random::Range(0, 255);
 		newGenes.color.green = Random::Range(0, 255);
 		newGenes.color.blue = Random::Range(0, 255);
-		newGenes.matureSize = (Random::Range(0.25f, 1.f)* Random::Range(0.25f, 1.f)) * 5.f;
-		newGenes.startSize = Random::Range(0.25f, 1.f);
-		newGenes.maxSpeed = Random::Range(1.f, 20.f);
-		newGenes.detectionRange = Random::Range(0.f, 50.f);
-		newGenes.propagationInterval = Random::Range(0.f, 60.f);
+		newGenes.matureSize = Random::Range(0.25f, 5.f);
+		newGenes.startSize = Random::Range(0.1f, .25f);
+		newGenes.maxSpeed = Random::Range(2.f, 20.f);
+		newGenes.detectionRange = Random::Range(10.f, 25.f);
+		newGenes.propagationInterval = Random::Range(1.f, 20.f);
 		newGenes.propagationMinEnergy = Random::Range(0.f, 1.f);
-		newGenes.mutationProbability = 0.25f;
-		newGenes.lifespan = Random::Range(0.f, 60.f * 10.f);
+		newGenes.mutationProbability = 1.f;
+		newGenes.lifespan = Random::Range(0.f, 60.f * 4.f);
 		newGenes.matureAge = Random::Range(0.f, 60.f * 1.f);
-		newGenes.diet = Random::Range(0.f, 1.f);
+		newGenes.diet = Random::Range(0.33f, .67f);
+		newGenes.predation = Random::Range(0.f, 2.f);
+		newGenes.hungerThreshold = Random::Range(0.5f, 1.f);
+		newGenes.spawnOnPropagation = Random::Range(1.f, 2.f);
 	}
 
-	//std::cout << std::endl;
-
 	cells.push_back(Cell());
-	Cell& newCell = cells[cells.size() - 1];
+
+	childIndex = cells.size() - 1;
+	Cell& newCell = cells[childIndex];
+	float newEnergy = newGenes.startSize * 10.f;
 	newCell.position = pos;
-	newCell.energy = newGenes.startSize * 10.f;
+	newCell.energy = newEnergy;
 	newCell.genes = newGenes;
 	newCell.propagationTimer.reset = newGenes.propagationInterval;
+	newCell.health = newCell.Size() * 100.f;
+	newCell.behavior = Behavior::Feed;
+
+	if (cells.size() > 10000)
+	{
+		std::cout << "Overpopulation!" << std::endl;
+		Reset();
+	}
+
+	return newEnergy;
 }
 
 Vec2f Cells::RandomScreenPosition()
@@ -501,6 +727,10 @@ void Cells::HandleKeyDown(Keys key)
 	if (key == Keys::R)
 	{
 		Reset();
+	}
+	if (key == Keys::D)
+	{
+		debugMode = !debugMode;
 	}
 }
 
@@ -543,7 +773,7 @@ void Cells::CalcSteering(Vec2f steeringDirection, bool shouldBreak, float maxSpe
 
 float Cells::MutateGene(float parentGene, const std::string& name, float min, float max) const
 {
-	float mutationRange = parentGene * 0.2f;
+	float mutationRange = parentGene * 0.8f;
 	float mutatedGene = MathUtils::Max(min, parentGene + Random::Range(-mutationRange, mutationRange));
 	if (max > -1.f)
 		mutatedGene = MathUtils::Min(mutatedGene, max);
@@ -560,6 +790,13 @@ Vec2i Cells::WorldToFoodCoord(Vec2f worldPos) const
 	foodPos.y = MathUtils::Clamp(foodPos.y, 0, food.m_height - 1);
 
 	return foodPos;
+}
+
+void Cells::DrawBar(Vec2i ssPos, float value, Color color)
+{
+	DrawRectangleSolid(ssPos, 48, 8, Colors::BLACK);
+	DrawRectangle(ssPos, 48, 8, Colors::WHITE);
+	DrawRectangleSolid(ssPos + Vec2i(2, 2), 44 * value, 4, color);
 }
 
 void Cells::Reset()
@@ -588,8 +825,13 @@ void Cells::Reset()
 	int nInitialSpecies = 1;
 	for (int i = 0; i < nInitialSpecies; i++)
 	{
-		PropagateCell(RandomScreenPosition(), nullptr, true);
+		int childIndex = -1;
+		PropagateCell(RandomScreenPosition(), nullptr, true, childIndex);
 	}
+
+	deathsByStarvaion = 0;
+	deathsByAge = 0;
+	deathsByMurder = 0;
 }
 
 int Cells::GetLastestGen() const
@@ -602,4 +844,14 @@ int Cells::GetLastestGen() const
 	}
 
 	return highestGen;
+}
+
+float Cell::GetMetabolism() const
+{
+	float size = Size();
+	float speed = velocity.Length();
+	float sizeCost = Size() * 0.05f;
+	float speedCost = speed * 0.01f * size;
+
+	return sizeCost + speedCost;
 }

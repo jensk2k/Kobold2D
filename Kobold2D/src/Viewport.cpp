@@ -70,7 +70,7 @@ void Viewport::DrawGrid(GameState& gameState, int scale)
 
 void Viewport::DrawRectangle(Vec2f position, float width, float height, Color color) const
 {
-	gameState.DrawRectangle(WorldToScreenSpace(position), width * scale, height * scale, color);
+	gameState.DrawRectangle(WorldToScreenSpace(position), width * scale, height * -scale, color);
 }
 
 void Viewport::DrawRectangleSolid(Vec2f position, float width, float height, Color color) const

@@ -4,12 +4,11 @@
 #include "Matrix.h"
 #include <sstream>
 
-NeuralNetworkDrawer::NeuralNetworkDrawer(GameState& gameState, const NeuralNetwork& nn)
+NeuralNetworkDrawer::NeuralNetworkDrawer(GameState& gameState)
 	: gameState(gameState)
-	, nn(nn)
 {}
 
-void NeuralNetworkDrawer::DrawNeuralNetwork(const Matrix* input, Vec2i topLeft, int width, int height, bool drawText, int neuronRadius)
+void NeuralNetworkDrawer::DrawNeuralNetwork(const NeuralNetwork& nn, const Matrix* input, Vec2i topLeft, int width, int height, bool drawText, int neuronRadius)
 {
 	gameState.DrawRectangle(topLeft, width, height, Colors::WHITE);
 

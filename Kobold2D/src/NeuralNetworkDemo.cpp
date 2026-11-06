@@ -23,7 +23,7 @@ NeuralNetworkDemo::NeuralNetworkDemo(Core& core)
 	: GameState(core)
 	, nn(0.1f, { 2, 2, 1 })
 	, colorMap(28, 28)
-	, nnDrawer(*this, nn)
+	, nnDrawer(*this)
 {
 	trainingData = 
 	{
@@ -74,7 +74,7 @@ void NeuralNetworkDemo::Render()
 
 	int bottomYSpace = GetWindowHeight() - height - 3.f * margin;
 
-	nnDrawer.DrawNeuralNetwork(&displayedInput, topLeft, width, height, true, 20);
+	nnDrawer.DrawNeuralNetwork(nn, &displayedInput, topLeft, width, height, true, 20);
 		
 	{
 		for (int y = 0; y < colorMap.m_height; y++)

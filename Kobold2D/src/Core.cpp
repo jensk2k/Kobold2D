@@ -22,6 +22,7 @@
 #include "GeneticAlgorithmDemo.h"
 #include "CTF.h"
 #include "PhysicsDemo.h"
+#include "FlappyBot.h"
 
 Core::Core() 
 {	
@@ -38,11 +39,12 @@ Core::Core()
 	//m_gameState = std::make_unique<Trails>(*this);
 	//m_gameState = std::make_unique<CPUShader>(*this);
 	//m_gameState = std::make_unique<NeuralNetworkDemo>(*this);
-	//m_gameState = std::make_unique<NNFilter>(*this);
+	m_gameState = std::make_unique<NNFilter>(*this);
 	//m_gameState = std::make_unique<GAMetaBalls>(*this);
 	//m_gameState = std::make_unique<GeneticAlgorithmDemo>(*this);
-	m_gameState = std::make_unique<CTF>(*this);
+	//m_gameState = std::make_unique<CTF>(*this);
 	//m_gameState = std::make_unique<PhysicsDemo>(*this);
+	//m_gameState = std::make_unique<FlappyBot>(*this);
 }
 
 Core::~Core()

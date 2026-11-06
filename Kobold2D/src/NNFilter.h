@@ -44,7 +44,7 @@ private:
 
 	int tryCount = 0;
 	const int maxTries = 1000;
-	const int maxBackProps = 100000;
+	const int maxBackProps = 10000;
 	std::vector<std::string> paths;
 	int pathIndex = 0;
 

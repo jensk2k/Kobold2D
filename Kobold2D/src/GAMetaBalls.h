@@ -4,8 +4,11 @@
 #include <vector>
 
 #define POPULATION 100
-#define MUTATION_RATE 0.5
-#define BLOB_MAX_RADIUS 0.5
+#define MUTATION_RATE 0.25
+#define BLOB_MAX_RADIUS 0.25
+#define NUMBER_OF_BLOBS 10
+#define NUMBER_OF_COLORS 3
+
 
 struct NNBlob
 {
@@ -36,9 +39,11 @@ private:
 	void LoadInputImage(int index);
 	
 	Texture inputTex;
+	Texture inputTexDownscaled;
 	Texture outputTex;
 	Texture bestTex;
 	Map2D<Color> inputMap;
+	Map2D<Color> inputMapDownscaled;
 	Map2D<Color> outputMap;
 	Map2D<Color> bestMap;
 

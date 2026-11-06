@@ -5,6 +5,9 @@
 
 struct NeuralNetwork
 {
+	NeuralNetwork() :
+		 learningRate(0.1f)
+	{}
 	NeuralNetwork(float learningRate, const std::vector<unsigned>& layerShapes);
 	void RandomizeWeightsAndBiases();
 	Matrix Solve(const Matrix& input) const;
@@ -14,10 +17,9 @@ struct NeuralNetwork
 
 	std::vector<Matrix> weights;
 	std::vector<Matrix> biases;
-
 	std::vector<unsigned> layerShapes;
 
-	const float learningRate;
+	float learningRate;
 };
 
 static float Sigmoid(float x)

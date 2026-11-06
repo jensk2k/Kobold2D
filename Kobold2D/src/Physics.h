@@ -33,6 +33,7 @@ namespace Physics
 		{}
 		Layer layer;
 		Shape shape;
+		bool enabled = true;
 	};
 
 	struct CollisionInfo
@@ -51,10 +52,10 @@ namespace Physics
 			height(height),
 			width(width)
 		{
-			std::cout << "new box with id " << objectID << std::endl;
 		}
 		float CalculateSignedDistance(Vec2f target);
 		unsigned objectID;
+		Info* info = nullptr;
 		Vec2f position;
 		float height;
 		float width;
@@ -72,6 +73,7 @@ namespace Physics
 
 		float CalculateSignedDistance(Vec2f target);
 		unsigned objectID;
+		Info* info = nullptr;
 		Vec2f position;
 		float radius;
 	};
@@ -92,16 +94,17 @@ namespace Physics
 		Circle* GetCircleByID(unsigned id);
 		unsigned AddBox(Layer layer, Vec2f position, float width, float height);
 		unsigned AddCircle(Layer layer, Vec2f position, float radius);
-		const Info& GetInfoByID(unsigned id) { return infoMap[id]; }
+		Info& GetInfoByID(unsigned id) { return infoMap[id]; }
 		void CheckCollisions();
+		void Clear();
 
 	private:
 		std::vector<Box> boxes;
 		std::vector<Circle> circles;
+		std::map<unsigned, Info> infoMap;
 		float raycastMin;
 		float raycastMax;
 		std::function<void(CollisionInfo colInfo)> col;
-		std::map<unsigned, Info> infoMap;
 	};
 }
 

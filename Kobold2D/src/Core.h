@@ -14,10 +14,10 @@
 
 #define PROFILING 0
 #define FULLSCREEN 0
-//#define INITSCREEN_W 1280
-//#define INITSCREEN_H 720
-#define INITSCREEN_W 1920
-#define INITSCREEN_H 1080
+#define INITSCREEN_W 1280
+#define INITSCREEN_H 720
+//#define INITSCREEN_W 1920
+//#define INITSCREEN_H 1080
 //#define SCREEN_W 2560
 //#define SCREEN_H 1440
 

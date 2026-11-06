@@ -256,11 +256,11 @@ void CreatureGeneration::Render()
 			}
 		}
 
-		std::ostringstream ss;
+		/*std::ostringstream ss;
 		ss << "h: " << MathUtils::Rad2Deg(creature.transform.GetHeading());
 		Vec2i textPos = viewport.WorldToScreenSpace(creature.transform.position);
 
-		DrawText(ss.str(), textPos.x, textPos.y);
+		DrawText(ss.str(), textPos.x, textPos.y);*/
 
 		//// Draw steering
 		//DrawArrowWS(creature.transform.position, (creature.steeringTarget - creature.transform.position).Normalized(), 4.f, Colors::YELLOW);
